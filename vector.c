@@ -23,7 +23,8 @@ Vector* newVectorWithSize(int typeSize, int initSize,
  * initialize. [typesize] is the size in bytes as given by sizeof() of the
  * type this vector must hold. The remaining parameters are optional
  * (somewhat). [initSize] is the initial length that the underlying array
- * primitive should be initialized to. However, if [num] is given, then the
+ * primitive should be initialized to, and will be ignored if it's < 2.
+ * However, if [num] is given, then the
  * greater of [initSize] or [num] is used. [contents] is an optional
  * initialization array that will be copied into the vector. [num] is the
  * number of elements in [contents]. [deconstructor] is the function that is
@@ -32,7 +33,7 @@ Vector* newVectorWithSize(int typeSize, int initSize,
  */
 Vector* initVector(Vector* v, int typeSize, int initSize, 
                 const void* contents, int num, void (*deconstructor)(void*)) {
-  initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE: initSize;
+  initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1;
   v->arr = malloc(typeSize * initSize);
   v->_arrSize = initSize;
