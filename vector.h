@@ -44,11 +44,11 @@ void destroyVector(Vector**);
 void deinitVector(Vector*);
 
 // The following are aliases for common array types
-inline Vector* newCharVector(int initSize, const char* contents, int num) { 
+inline Vector* newByteVector(int initSize, const char* contents, int num) { 
   return newVectorWithSize(sizeof(char), initSize, contents, num, NULL); 
 }
 
-inline Vector* initCharVector(Vector* v, int initSize, 
+inline Vector* initByteVector(Vector* v, int initSize, 
                               const char* contents, int num) {
   return initVector(v, sizeof(char), initSize, contents, num, NULL);
 }

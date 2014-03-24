@@ -10,12 +10,12 @@ typedef Vector String;
 
 inline String* newString(const char* contents) { 
   int len = contents ? strlen(contents) : 0;
-  return newCharVector(_STRING_VECTOR_INIT_SIZE, contents, len); 
+  return newByteVector(_STRING_VECTOR_INIT_SIZE, contents, len); 
 }
 
 inline String* initString(String* str, const char* contents) {
   int len = contents ? strlen(contents) : 0;
-  return initCharVector(str, _STRING_VECTOR_INIT_SIZE, contents, len);
+  return initByteVector(str, _STRING_VECTOR_INIT_SIZE, contents, len);
 }
 
 void StringFgets(String* str, FILE* fd, VectorErr*);

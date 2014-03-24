@@ -61,8 +61,8 @@ void deinitVector(Vector* v) {
   free(v->arr);
 }
 
-extern Vector* newCharVector(int initSize, const char *contents, int num);
-extern Vector* initCharVector(Vector* v, int initSize, const char* contents, int num);
+extern Vector* newByteVector(int initSize, const char *contents, int num);
+extern Vector* initByteVector(Vector* v, int initSize, const char* contents, int num);
 extern Vector* newDoubleVector(const double* contents, int num);
 extern Vector* initDoubleVector(Vector* v, const char* contents, int num);
 extern Vector* newIntVector(const int* contents, int num);
@@ -164,7 +164,7 @@ void _VectorAppendNull(const Vector* v) {
   // It's safe to assume that if the object type stored is larger than a pointer
   // then it's not of a primitive type and an appended NULL value would be
   // meaningless
-  
+
   memcpy(_VectorCalcDanglingPtr(v), &nilly, 
          v->_typeSize < numBytes ? v->_typeSize : numBytes);
 }
