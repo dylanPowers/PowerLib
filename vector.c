@@ -7,13 +7,13 @@
  * [num] to 0 and it will be ignored.
  */
 Vector* newVector(int typeSize, const void* contents, int num, 
-                  void (*deconstructor)(void*)) {
+                  void (*deconstructor)(void**)) {
   return newVectorWithSize(typeSize, 0, contents, num, deconstructor);
 }
 
 Vector* newVectorWithSize(int typeSize, int initSize, 
                           const void* contents, int num,
-                          void (*deconstructor)(void*)) {
+                          void (*deconstructor)(void**)) {
   Vector* vec = (Vector*) malloc(sizeof(Vector));
   return initVector(vec, typeSize, initSize, contents, num, deconstructor);
 }
@@ -32,7 +32,7 @@ Vector* newVectorWithSize(int typeSize, int initSize,
  * anything that's been dynamically allocated.  
  */
 Vector* initVector(Vector* v, int typeSize, int initSize, 
-                const void* contents, int num, void (*deconstructor)(void*)) {
+                const void* contents, int num, void (*deconstructor)(void**)) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1;
   v->arr = malloc(typeSize * initSize);
@@ -68,9 +68,9 @@ extern Vector* newDoubleVector(const double* contents, int num);
 extern Vector* initDoubleVector(Vector* v, const char* contents, int num);
 extern Vector* newIntVector(const int* contents, int num);
 extern Vector* newPointerVector(const void* contents, int num, 
-                                void (*deconstructor)(void *));
+                                void (*deconstructor)(void**));
 extern Vector* initPointerVector(Vector* v, const void *contents, int num, 
-                                 void (*deconstructor)(void *));
+                                 void (*deconstructor)(void**));
 
 /**
  * We want the pointer to the [element] but remember that it isn't the pointer
