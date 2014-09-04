@@ -19,7 +19,7 @@ typedef struct Vector {
 
   // Privates. No touchy!
   int _arrSize; // A size
-  void (*_destruct)(void*);
+  void (*_destruct)(void**);
   int _typeSize;
 } Vector;
 
@@ -34,12 +34,12 @@ typedef enum VectorErr {
 } VectorErr;
 
 Vector* newVector(int typeSize, const void* contents, int num, 
-                  void (*deconstructor)(void*));
+                  void (*deconstructor)(void**));
 Vector* newVectorWithSize(int typeSize, int initSize, 
                           const void* contents, int num, 
-                          void (*deconstructor)(void*));
+                          void (*deconstructor)(void**));
 Vector* initVector(Vector*, int typeSize, int initSize, 
-                   const void* contents, int num, void (*deconstructor)(void*));
+                   const void* contents, int num, void (*deconstructor)(void**));
 void destroyVector(Vector**);
 void deinitVector(Vector*);
 
@@ -66,12 +66,12 @@ inline Vector* newIntVector(const int* contents, int num) {
 }
 
 inline Vector* newPointerVector(const void* contents, int num, 
-                                void (*deconstructor)(void*)) {
+                                void (*deconstructor)(void**)) {
   return newVector(sizeof(void*), contents, num, deconstructor);
 }
 
 inline Vector* initPointerVector(Vector* v, const void *contents, int num, 
-                                 void (*deconstructor)(void *)) {
+                                 void (*deconstructor)(void**)) {
   return initVector(v, sizeof(void*), 0, contents, num, deconstructor);
 }
 
