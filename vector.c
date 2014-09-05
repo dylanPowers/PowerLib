@@ -136,7 +136,7 @@ Vector* VectorClear(Vector* v) {
   VectorErr verr;
   if (v->_destruct) {
     for (int i = 0; i < v->length; ++i) {
-      v->_destruct(VectorPtrAt(v, i, &verr));
+      v->_destruct((void**) VectorPtrAt(v, i, &verr));
     }
   }
 
