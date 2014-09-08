@@ -146,8 +146,18 @@ Vector* VectorClear(Vector* v) {
   return v;
 }
 
+void VectorForEach(const Vector* v, 
+                   void (*lambda)(void* itemPtr, int index)) {
+  VectorErr e;
+  for (int i = 0; i < v->length; ++i) {
+    void* item = VectorPtrAt(v, i, &e);
+    lambda(item, i);
+  }
+}
+
 /**
  * Returns a pointer to the specified [index] value.
+ * Error if index is out of range.
  */
 void* VectorPtrAt(const Vector* v, int index, VectorErr* e) { 
   if (index >= v->length || index < 0) {

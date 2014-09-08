@@ -79,6 +79,7 @@ void* VectorAdd(Vector*, const void* element, VectorErr*);
 Vector* VectorCat(Vector*, const Vector*, VectorErr*);
 Vector* VectorCatPrimitive(Vector*, const void* arr, int num, VectorErr*);
 Vector* VectorClear(Vector*);
+void VectorForEach(const Vector*, void (*)(void* itemPtr, int index));
 void* VectorPtrAt(const Vector*, int index, VectorErr*);
 
 void _VectorAppendNull(const Vector* v);
