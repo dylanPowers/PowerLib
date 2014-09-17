@@ -1,5 +1,37 @@
 #include "vector.h"
 
+#include "stdlib.h"
+#include "string.h" // memcpy() has to do with strings apparently
+
+#define _VECTOR_DEFAULT_INIT_SIZE 16
+
+// Look, a mutherfuckin vector. Let's reinvent the rock
+struct Vector {
+  void* arr; // Array yo
+  int length; // Woah! We're told a length?
+
+  // Privates. No touchy!
+  int _arrSize; // A size
+  void* (*_copyInitializer)(void*, const void*);
+  void (*_deInitializer)(void*);
+  int _typeSize;
+};
+
+/**
+ * These are the various errors that a vector can give.
+ */
+enum VectorErr {
+  CLEAR,
+  E_NOMEMS,
+  E_INCOMPATIBLE_TYPES,
+  E_RANGE
+};
+
+void* _Vector_appendCopy(Vector*, const void*);
+void _Vector_appendNull(const Vector*);
+void* _Vector_calcPtrAt(const Vector*, int);
+void* _Vector_calcDanglingPtr(const Vector*);
+
 /**
  * This function allocates memory for a new Vector and appropriately
  * initializes it. 
@@ -7,15 +39,19 @@
  * [num] to 0 and it will be ignored.
  */
 Vector* newVector(int typeSize, const void* contents, int num, 
-                  void (*deconstructor)(void**)) {
-  return newVectorWithSize(typeSize, 0, contents, num, deconstructor);
+                  void* (*initializer)(void*, const void*),
+                  void (*deInitializer)(void*)) {
+  return newVectorWithSize(typeSize, 0, contents, num, initializer, 
+                           deInitializer);
 }
 
 Vector* newVectorWithSize(int typeSize, int initSize, 
-                          const void* contents, int num,
-                          void (*deconstructor)(void**)) {
+                          const void* contents, int num, 
+                          void* (*initializer)(void*, const void*),
+                          void (*deInitializer)(void*)) {
   Vector* vec = (Vector*) malloc(sizeof(Vector));
-  return initVector(vec, typeSize, initSize, contents, num, deconstructor);
+  return initVector(vec, typeSize, initSize, contents, num, initializer, 
+                    deInitializer);
 }
 
 /**
@@ -32,17 +68,19 @@ Vector* newVectorWithSize(int typeSize, int initSize,
  * anything that's been dynamically allocated.  
  */
 Vector* initVector(Vector* v, int typeSize, int initSize, 
-                const void* contents, int num, void (*deconstructor)(void**)) {
+                   const void* contents, int num, 
+                   void* (*initializer)(void*, const void*), 
+                   void (*deInitializer)(void*)) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1;
   v->arr = malloc(typeSize * initSize);
   v->_arrSize = initSize;
-  v->_destruct = deconstructor;
+  v->_deInitializer = deInitializer;
   v->_typeSize = typeSize;
   v->length = 0;
 
   VectorErr verr;
-  VectorCatPrimitive(v, contents, num, &verr);
+  Vector_catPrimitive(v, contents, num, &verr);
 
   return v;
 }
@@ -58,7 +96,7 @@ void destroyVector(Vector** v) {
  * to be reused.
  */
 void deinitVector(Vector* v) {
-  VectorClear(v);
+  Vector_clear(v);
   free(v->arr);
 }
 
@@ -67,10 +105,6 @@ extern Vector* initByteVector(Vector* v, int initSize, const char* contents, int
 extern Vector* newDoubleVector(const double* contents, int num);
 extern Vector* initDoubleVector(Vector* v, const char* contents, int num);
 extern Vector* newIntVector(const int* contents, int num);
-extern Vector* newPointerVector(const void* contents, int num, 
-                                void (*deconstructor)(void**));
-extern Vector* initPointerVector(Vector* v, const void *contents, int num, 
-                                 void (*deconstructor)(void**));
 
 /**
  * We want the pointer to the [element] but remember that it isn't the pointer
@@ -78,36 +112,32 @@ extern Vector* initPointerVector(Vector* v, const void *contents, int num,
  * Returned is the address to it's location in the Vector 
  * (same as VectorPtrAt())
  */
-void* VectorAdd(Vector* v, const void* element, VectorErr* e) {
+void* Vector_add(Vector* v, const void* element, VectorErr* e) {
   if (v->_arrSize < v->length + 1 + 1) {
     v->_arrSize *= 2;
     v->arr = realloc(v->arr, v->_arrSize * v->_typeSize);
   }
 
-  void* arrayPosition = _VectorCalcDanglingPtr(v);
-  memcpy(arrayPosition, element, v->_typeSize); // Owned. Get assigned.
-  ++(v->length);
-
-  _VectorAppendNull(v);
+  void* arrayPosition = _Vector_appendCopy(v, element);
+  _Vector_appendNull(v);
 
   return arrayPosition;
 }
-
 
 /**
  * Copy one Vector onto the end of another. Vector [other] gets appended to
  * Vector [v] in this case.
  */
-Vector* VectorCat(Vector* v, const Vector* other, VectorErr* e) {
+Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e) {
   if (v->_typeSize != other->_typeSize) {
     *e = E_INCOMPATIBLE_TYPES;
     return v;
   }
 
-  return VectorCatPrimitive(v, other->arr, other->length, e);
+  return Vector_catPrimitive(v, other->arr, other->length, e);
 }
 
-Vector* VectorCatPrimitive(Vector* v, const void* arr, int num, VectorErr* e) {
+Vector* Vector_catPrimitive(Vector* v, const void* arr, int num, VectorErr* e) {
   if (num > 0) {
 
     if (v->_arrSize < v->length + num + 1) {
@@ -120,38 +150,38 @@ Vector* VectorCatPrimitive(Vector* v, const void* arr, int num, VectorErr* e) {
       }
     }
 
-    void* arrayPosition = _VectorCalcDanglingPtr(v);
-    memcpy(arrayPosition, arr, v->_typeSize * num);
-    v->length += num;
+    for (int i = 0; i < num; ++i) {
+      _Vector_appendCopy(v, &arr[i]);
+    }
 
     // For compatibility with primitive array functions, always append a NULL
     // value.
-    _VectorAppendNull(v); 
+    _Vector_appendNull(v);
   }
   
   return v;
 }
 
-Vector* VectorClear(Vector* v) {
+Vector* Vector_clear(Vector* v) {
   VectorErr verr;
-  if (v->_destruct) {
+  if (v->_deInitializer) {
     for (int i = 0; i < v->length; ++i) {
-      v->_destruct((void**) VectorPtrAt(v, i, &verr));
+      v->_deInitializer((void*) Vector_ptrAt(v, i, &verr));
     }
   }
 
   v->length = 0; // I cheat LOL
-  _VectorAppendNull(v);
+  _Vector_appendNull(v);
   
   return v;
 }
 
-void VectorForEach(const Vector* v, 
-                   void (*lambda)(void* itemPtr, int index)) {
+void Vector_forEach(const Vector* v, 
+                   void (*action)(void* itemPtr, int index)) {
   VectorErr e;
   for (int i = 0; i < v->length; ++i) {
-    void* item = VectorPtrAt(v, i, &e);
-    lambda(item, i);
+    void* item = Vector_ptrAt(v, i, &e);
+    action(item, i);
   }
 }
 
@@ -159,26 +189,37 @@ void VectorForEach(const Vector* v,
  * Returns a pointer to the specified [index] value.
  * Error if index is out of range.
  */
-void* VectorPtrAt(const Vector* v, int index, VectorErr* e) { 
+void* Vector_ptrAt(const Vector* v, int index, VectorErr* e) { 
   if (index >= v->length || index < 0) {
     *e = E_RANGE;
     return v->arr;
   } 
 
-  return _VectorCalcPtrAt(v, index);
+  return _Vector_calcPtrAt(v, index);
 }
 
-void _VectorAppendNull(const Vector* v) {
-  void* nilly = 0;
-  int numBytes = sizeof(void*);
-
-  // It's safe to assume that if the object type stored is larger than a pointer
-  // then it's not of a primitive type and an appended NULL value would be
-  // meaningless
-
-  memcpy(_VectorCalcDanglingPtr(v), &nilly, 
-         v->_typeSize < numBytes ? v->_typeSize : numBytes);
+void* _Vector_appendCopy(Vector* v, const void* element) {
+  void* arrayPosition = _Vector_calcDanglingPtr(v);
+  if (v->_copyInitializer) {
+    v->_copyInitializer(arrayPosition, element);
+  } else {
+    memcpy(arrayPosition, element, v->_typeSize);
+  }
+  ++(v->length);
+  return arrayPosition;
 }
 
-extern void* _VectorCalcPtrAt(const Vector *v, int index);
-extern void* _VectorCalcDanglingPtr(const Vector *v);
+void _Vector_appendNull(const Vector* v) {
+  void* nilly = malloc(v->_typeSize);
+
+  memcpy(_Vector_calcDanglingPtr(v), nilly, v->_typeSize);
+  free(nilly);
+}
+
+void* _Vector_calcPtrAt(const Vector* v, int index) {
+  return ((char*) v->arr) + index * v->_typeSize;
+}
+
+void* _Vector_calcDanglingPtr(const Vector* v) {
+  return _Vector_calcPtrAt(v, v->length);
+}
