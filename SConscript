@@ -1,2 +1,2 @@
 Import('env')
-env.Library('cPowers', ['vector.c', 'stringVector.c'])
+env.Library('cPowers', ['src/vector.c', 'src/stringVector.c', 'src/linkedList.c'])
