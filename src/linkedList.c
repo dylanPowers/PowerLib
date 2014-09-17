@@ -10,7 +10,7 @@ struct LinkedList {
   SingleLinkedNode* firstNode;
   int length;
 
-  void* (*_copyInitializer)(void*);
+  void* (*_copyInitializer)(void*, const void*);
   void (*_deInitializer)(void*);
   int _typeSize;
 };
@@ -20,14 +20,15 @@ struct SingleLinkedNode {
   SingleLinkedNode* next;
 };
 
-LinkedList* newLinkedList(int typeSize, void* (*_copyInitializer)(void*), 
+LinkedList* newLinkedList(int typeSize, 
+                          void* (*_copyInitializer)(void*, const void*), 
                           void (*deInitializer)(void*)) {
   LinkedList* list = (LinkedList*) malloc(sizeof(LinkedList));
   return initLinkedList(list, typeSize, _copyInitializer, deInitializer);
 }
 
 LinkedList* initLinkedList(LinkedList* list, int typeSize, 
-                           void* (*copyInitializer)(void*), 
+                           void* (*copyInitializer)(void*, const void*), 
                            void (*deInitializer)(void*)) {
   list->firstNode = NULL;
   list->length = 0;
@@ -42,17 +43,17 @@ void destroyLinkedList(LinkedList** listPtr) {
   *listPtr = NULL;
 }
 
-SingleLinkedNode* newSingleLinkedNode(void* data, int typeSize,
-                                      void* (*copyInitializer)(void*)) {
+SingleLinkedNode* newSingleLinkedNode(const void* data, int typeSize,
+                                      void* (*copyInitializer)(void*, const void*)) {
   SingleLinkedNode* node = (SingleLinkedNode*) malloc(sizeof(SingleLinkedNode));
   return initSingleLinkedNode(node, data, typeSize, copyInitializer);
 }
 
-SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode* node, void* data, 
+SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode* node, const void* data, 
                                        int typeSize, 
-                                       void* (*copyInitializer)(void*)) {
+                                       void* (*copyInitializer)(void*, const void*)) {
   node->data = malloc(typeSize);
-  copyInitializer(node->data);
+  copyInitializer(node->data, data);
   node->next = NULL;
   return node;
 }
@@ -64,7 +65,7 @@ void destroySingleLinkedNode(SingleLinkedNode** nodePtr,
   *nodePtr = NULL;
 }
 
-void LinkedList_append(LinkedList* list, void* data) {
+void LinkedList_append(LinkedList* list, const void* data) {
   SingleLinkedNode** appendLocation;
   if (list->firstNode != NULL) {
     appendLocation = &_LinkedList_lastNode(list)->next;
@@ -103,7 +104,7 @@ void* LinkedList_last(const LinkedList* list) {
   return _LinkedList_lastNode(list)->data;
 }
 
-void LinkedList_prepend(LinkedList* list, void* data) {
+void LinkedList_prepend(LinkedList* list, const void* data) {
   SingleLinkedNode* oldFirst = list->firstNode;
   list->firstNode = newSingleLinkedNode(data, list->_typeSize, 
                                         list->_copyInitializer);
