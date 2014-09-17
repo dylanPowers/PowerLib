@@ -4,13 +4,13 @@
 typedef struct LinkedList LinkedList;
 typedef struct SingleLinkedNode SingleLinkedNode;
 
-LinkedList* newLinkedList(void* (*)(void*), void (*)(void**));
-LinkedList* initLinkedList(LinkedList*, void* (*)(void*), void (*)(void**));
+LinkedList* newLinkedList(int, void* (*)(void*), void (*)(void*));
+LinkedList* initLinkedList(LinkedList*, int, void* (*)(void*), void (*)(void*));
 void destroyLinkedList(LinkedList**);
 
-SingleLinkedNode* newSingleLinkedNode(void*, void* (*)(void*));
-SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode*, void*, void* (*)(void*));
-void destroySingleLinkedNode(SingleLinkedNode**, void (*)(void**));
+SingleLinkedNode* newSingleLinkedNode(void*, int, void* (*)(void*));
+SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode*, void*, int, void* (*)(void*));
+void destroySingleLinkedNode(SingleLinkedNode**, void (*)(void*));
 
 void LinkedList_prepend(LinkedList*, void* data);
 void LinkedList_append(LinkedList*, void* data);
