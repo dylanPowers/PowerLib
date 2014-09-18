@@ -6,20 +6,6 @@
 SingleLinkedNode* _LinkedList_lastNode(const LinkedList*);
 void _LinkedList_nullifyLast(LinkedList*, SingleLinkedNode*);
 
-struct LinkedList {
-  SingleLinkedNode* firstNode;
-  int length;
-
-  void* (*_copyInitializer)(void*, const void*);
-  void (*_deInitializer)(void*);
-  int _typeSize;
-};
-
-struct SingleLinkedNode {
-  void* data;
-  SingleLinkedNode* next;
-};
-
 LinkedList* newLinkedList(int typeSize, 
                           void* (*_copyInitializer)(void*, const void*), 
                           void (*deInitializer)(void*)) {

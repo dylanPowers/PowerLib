@@ -1,8 +1,21 @@
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
 
-typedef struct LinkedList LinkedList;
 typedef struct SingleLinkedNode SingleLinkedNode;
+
+typedef struct LinkedList {
+  SingleLinkedNode* firstNode;
+  int length;
+
+  void* (*_copyInitializer)(void*, const void*);
+  void (*_deInitializer)(void*);
+  int _typeSize;
+} LinkedList;
+
+struct SingleLinkedNode {
+  void* data;
+  SingleLinkedNode* next;
+};
 
 LinkedList* newLinkedList(int, void* (*)(void*, const void*), void (*)(void*));
 LinkedList* initLinkedList(LinkedList*, int, void* (*)(void*, const void*), 
