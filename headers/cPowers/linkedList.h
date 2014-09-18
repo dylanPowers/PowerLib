@@ -22,6 +22,7 @@ LinkedList* initLinkedList(LinkedList*, int, void* (*)(void*, const void*),
                            void (*)(void*));
 LinkedList* initLinkedListCp(LinkedList*, const LinkedList*);
 void destroyLinkedList(LinkedList**);
+void deinitLinkedList(LinkedList*);
 
 SingleLinkedNode* newSingleLinkedNode(const void*, int, 
                                       void* (*)(void*, const void*));

@@ -1,4 +1,3 @@
-#include <cursesf.h>
 #include "linkedList.h"
 
 #include "stdlib.h"
@@ -37,9 +36,13 @@ LinkedList* initLinkedListCp(LinkedList* list, const LinkedList* copy) {
 }
 
 void destroyLinkedList(LinkedList** listPtr) {
-  LinkedList_clear(*listPtr);
+  deinitLinkedList(*listPtr);
   free(*listPtr);
   *listPtr = NULL;
+}
+
+void deinitLinkedList(LinkedList* list) {
+  LinkedList_clear(list);
 }
 
 SingleLinkedNode* newSingleLinkedNode(const void* data, int typeSize,
