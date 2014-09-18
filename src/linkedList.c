@@ -1,3 +1,4 @@
+#include <cursesf.h>
 #include "linkedList.h"
 
 #include "stdlib.h"
@@ -20,6 +21,18 @@ LinkedList* initLinkedList(LinkedList* list, int typeSize,
   list->length = 0;
   list->_copyInitializer = copyInitializer;
   list->_deInitializer = deInitializer;
+  return list;
+}
+
+LinkedList* initLinkedListCp(LinkedList* list, const LinkedList* copy) {
+  initLinkedList(list, copy->_typeSize, copy->_copyInitializer,
+                 copy->_deInitializer);
+  SingleLinkedNode* nextNode = copy->firstNode;
+  while (nextNode != NULL) {
+    LinkedList_append(list, nextNode->data);
+    nextNode = nextNode->next;
+  }
+
   return list;
 }
 

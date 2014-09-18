@@ -20,6 +20,7 @@ struct SingleLinkedNode {
 LinkedList* newLinkedList(int, void* (*)(void*, const void*), void (*)(void*));
 LinkedList* initLinkedList(LinkedList*, int, void* (*)(void*, const void*), 
                            void (*)(void*));
+LinkedList* initLinkedListCp(LinkedList*, const LinkedList*);
 void destroyLinkedList(LinkedList**);
 
 SingleLinkedNode* newSingleLinkedNode(const void*, int, 
