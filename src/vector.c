@@ -1,36 +1,14 @@
 #include "vector.h"
 
-#include "stdlib.h"
 #include "string.h" // memcpy() has to do with strings apparently
 
 #define _VECTOR_DEFAULT_INIT_SIZE 16
-
-// Look, a mutherfuckin vector. Let's reinvent the rock
-struct Vector {
-  void* arr; // Array yo
-  int length; // Woah! We're told a length?
-
-  // Privates. No touchy!
-  int _arrSize; // A size
-  void* (*_copyInitializer)(void*, const void*);
-  void (*_deInitializer)(void*);
-  int _typeSize;
-};
-
-/**
- * These are the various errors that a vector can give.
- */
-enum VectorErr {
-  CLEAR,
-  E_NOMEMS,
-  E_INCOMPATIBLE_TYPES,
-  E_RANGE
-};
 
 void* _Vector_appendCopy(Vector*, const void*);
 void _Vector_appendNull(const Vector*);
 void* _Vector_calcPtrAt(const Vector*, int);
 void* _Vector_calcDanglingPtr(const Vector*);
+void _Vector_resize(Vector *, size_t, VectorErr *);
 
 /**
  * This function allocates memory for a new Vector and appropriately
@@ -38,15 +16,15 @@ void* _Vector_calcDanglingPtr(const Vector*);
  * Know that [contents] is an optional argument. Set it to NULL or
  * [num] to 0 and it will be ignored.
  */
-Vector* newVector(int typeSize, const void* contents, int num, 
+Vector* newVector(size_t typeSize, const void* contents, size_t num,
                   void* (*initializer)(void*, const void*),
                   void (*deInitializer)(void*)) {
   return newVectorWithSize(typeSize, 0, contents, num, initializer, 
                            deInitializer);
 }
 
-Vector* newVectorWithSize(int typeSize, int initSize, 
-                          const void* contents, int num, 
+Vector* newVectorWithSize(size_t typeSize, size_t initSize,
+                          const void* contents, size_t num,
                           void* (*initializer)(void*, const void*),
                           void (*deInitializer)(void*)) {
   Vector* vec = (Vector*) malloc(sizeof(Vector));
@@ -67,8 +45,8 @@ Vector* newVectorWithSize(int typeSize, int initSize,
  * used to dispose of elements in the vector when needed and is required for
  * anything that's been dynamically allocated.  
  */
-Vector* initVector(Vector* v, int typeSize, int initSize, 
-                   const void* contents, int num, 
+Vector* initVector(Vector* v, size_t typeSize, size_t initSize,
+                   const void* contents, size_t num,
                    void* (*initializer)(void*, const void*), 
                    void (*deInitializer)(void*)) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
@@ -100,11 +78,11 @@ void deinitVector(Vector* v) {
   free(v->arr);
 }
 
-extern Vector* newByteVector(int initSize, const char *contents, int num);
-extern Vector* initByteVector(Vector* v, int initSize, const char* contents, int num);
-extern Vector* newDoubleVector(const double* contents, int num);
-extern Vector* initDoubleVector(Vector* v, const char* contents, int num);
-extern Vector* newIntVector(const int* contents, int num);
+extern Vector* newByteVector(size_t initSize, const char *contents, size_t num);
+extern Vector* initByteVector(Vector* v, size_t initSize, const char* contents, size_t num);
+extern Vector* newDoubleVector(const double* contents, size_t num);
+extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num);
+extern Vector* newIntVector(const int* contents, size_t num);
 
 /**
  * We want the pointer to the [element] but remember that it isn't the pointer
@@ -113,9 +91,9 @@ extern Vector* newIntVector(const int* contents, int num);
  * (same as VectorPtrAt())
  */
 void* Vector_add(Vector* v, const void* element, VectorErr* e) {
-  if (v->_arrSize < v->length + 1 + 1) {
-    v->_arrSize *= 2;
-    v->arr = realloc(v->arr, v->_arrSize * v->_typeSize);
+  _Vector_resize(v, 1, e);
+  if (*e == E_NOMEMS) {
+    return NULL;
   }
 
   void* arrayPosition = _Vector_appendCopy(v, element);
@@ -137,21 +115,15 @@ Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e) {
   return Vector_catPrimitive(v, other->arr, other->length, e);
 }
 
-Vector* Vector_catPrimitive(Vector* v, const void* arr, int num, VectorErr* e) {
+Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, VectorErr* e) {
   if (num > 0) {
-
-    if (v->_arrSize < v->length + num + 1) {
-      v->_arrSize = v->length + num + 1;
-      v->arr = realloc(v->arr, v->_arrSize * v->_typeSize);
-      if (v->arr == NULL) {
-        v->_arrSize = v->length;
-        *e = E_NOMEMS;
-        return v;
-      }
+    _Vector_resize(v, num, e);
+    if (*e == E_NOMEMS) {
+      return v;
     }
 
     for (int i = 0; i < num; ++i) {
-      _Vector_appendCopy(v, &arr[i]);
+      _Vector_appendCopy(v, arr + i * v->_typeSize);
     }
 
     // For compatibility with primitive array functions, always append a NULL
@@ -222,4 +194,19 @@ void* _Vector_calcPtrAt(const Vector* v, int index) {
 
 void* _Vector_calcDanglingPtr(const Vector* v) {
   return _Vector_calcPtrAt(v, v->length);
+}
+
+void _Vector_resize(Vector *v, size_t numAdded, VectorErr *e) {
+  if (v->_arrSize <= v->length + numAdded) {
+    v->_arrSize = v->length + numAdded + 1 /* Null element */;
+    v->_arrSize *= 2; // For good measure.
+
+    void* newMems = realloc(v->arr, v->_arrSize * v->_typeSize);
+    if (newMems == NULL) {
+      v->_arrSize = v->length;
+      *e = E_NOMEMS;
+    } else {
+      v->arr = newMems;
+    }
+  }
 }

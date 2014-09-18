@@ -1,5 +1,7 @@
 #include "stringVector.h"
 
+#define _STRING_VECTOR_INIT_SIZE 64
+
 /**
  * Allocates memory for a new string using an underlying Vector implementation.
  * Any Vector function can be used on a String. [contents] is a primitive 
@@ -9,8 +11,15 @@
  * @param  contents Primitive C string to initialize to.
  * @return          A pointer to the initialized string.
  */
-extern String* newString(const char *contents);
-extern String* initString(String* str, const char* contents);
+String* newString(const char *contents) {
+  size_t len = contents ? strlen(contents) : 0;
+  return newByteVector(_STRING_VECTOR_INIT_SIZE, contents, len);
+}
+
+String* initString(String* str, const char* contents) {
+  size_t len = contents ? strlen(contents) : 0;
+  return initByteVector(str, _STRING_VECTOR_INIT_SIZE, contents, len);
+}
 
 /**
  * String vector version of fgets. Works exactly like fgets except it's not
@@ -24,15 +33,15 @@ void StringFgets(String* str, FILE* fd, VectorErr* e) {
   }
 
   // Let's be sure to start off clean to prevent bugs, especially with strlen().
-  VectorClear(str);
+  Vector_clear(str);
 
   fgets(str->arr, str->_arrSize, fd);
   str->length = strlen(str->arr);
-  while (*((char*) VectorPtrAt(str, str->length - 1, e)) != '\n' && 
+  while (*((char*) Vector_ptrAt(str, str->length - 1, e)) != '\n' &&
          !feof(fd) && !*e) {
     char tmpStr[1024];
     fgets(tmpStr, 1024, fd);
-    int len = strlen(tmpStr);
-    VectorCatPrimitive(str, tmpStr, len, e);
+    size_t len = strlen(tmpStr);
+    Vector_catPrimitive(str, tmpStr, len, e);
   }
 }
