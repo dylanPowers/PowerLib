@@ -7,8 +7,9 @@
 
 typedef Vector String;
 
-String* newString(const char* contents);
-String* initString(String* str, const char* contents);
+String* newString(const char*);
+String* initString(String*, const char*);
+String* initStringCp(String*, const String*);
 
 void StringFgets(String* str, FILE* fd, VectorErr*);
 

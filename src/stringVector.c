@@ -21,6 +21,11 @@ String* initString(String* str, const char* contents) {
   return initByteVector(str, _STRING_VECTOR_INIT_SIZE, contents, len);
 }
 
+String* initStringCp(String* str, const String* copyString) {
+  return initByteVector(str, copyString->_arrSize, copyString->arr,
+                        copyString->length);
+}
+
 /**
  * String vector version of fgets. Works exactly like fgets except it's not
  * limited to a predefined string size. 
