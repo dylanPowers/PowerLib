@@ -16,20 +16,33 @@ void _Vector_resize(Vector *, size_t, VectorErr *);
  * Know that [contents] is an optional argument. Set it to NULL or
  * [num] to 0 and it will be ignored.
  */
-Vector* newVector(size_t typeSize, const void* contents, size_t num,
-                  void* (*initializer)(void*, const void*),
-                  void (*deInitializer)(void*)) {
-  return newVectorWithSize(typeSize, 0, contents, num, initializer, 
-                           deInitializer);
+//Vector* newVector(size_t typeSize, const void* contents, size_t num,
+//                  void* (*initializer)(void*, const void*),
+//                  void (*deInitializer)(void*)) {
+//  return newVectorWithSize(typeSize, 0, contents, num, initializer,
+//                           deInitializer);
+//}
+
+//Vector* newVectorWithSize(size_t typeSize, size_t initSize,
+//                          const void* contents, size_t num,
+//                          void* (*initializer)(void*, const void*),
+//                          void (*deInitializer)(void*)) {
+//  Vector* vec = (Vector*) malloc(sizeof(Vector));
+//  return initVector(vec, typeSize, initSize, contents, num, initializer,
+//                    deInitializer);
+//}
+
+Vector* initVector(Vector* v, size_t typeSize,
+                   void* (*initializer)(void*, const void*),
+                   void (*deInitializer)(void*)) {
+  return initVectorAdvanced(v, typeSize, _VECTOR_DEFAULT_INIT_SIZE, NULL, 0,
+                            initializer, deInitializer);
 }
 
-Vector* newVectorWithSize(size_t typeSize, size_t initSize,
-                          const void* contents, size_t num,
-                          void* (*initializer)(void*, const void*),
-                          void (*deInitializer)(void*)) {
-  Vector* vec = (Vector*) malloc(sizeof(Vector));
-  return initVector(vec, typeSize, initSize, contents, num, initializer, 
-                    deInitializer);
+Vector* initVectorCp(Vector* v, const Vector* copy) {
+  return initVectorAdvanced(v, copy->_typeSize, copy->_arrSize,
+                            copy->arr, copy->length, copy->_copyInitializer,
+                            copy->_deInitializer);
 }
 
 /**
@@ -45,10 +58,10 @@ Vector* newVectorWithSize(size_t typeSize, size_t initSize,
  * used to dispose of elements in the vector when needed and is required for
  * anything that's been dynamically allocated.  
  */
-Vector* initVector(Vector* v, size_t typeSize, size_t initSize,
-                   const void* contents, size_t num,
-                   void* (*initializer)(void*, const void*), 
-                   void (*deInitializer)(void*)) {
+Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
+                           const void* contents, size_t num,
+                           void* (*initializer)(void*, const void*),
+                           void (*deInitializer)(void*)) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1;
   v->arr = malloc(typeSize * initSize);
@@ -63,11 +76,11 @@ Vector* initVector(Vector* v, size_t typeSize, size_t initSize,
   return v;
 }
 
-void destroyVector(Vector** v) {
-  deinitVector(*v);
-  free(*v);
-  *v = NULL;
-}
+//void destroyVector(Vector** v) {
+//  deinitVector(*v);
+//  free(*v);
+//  *v = NULL;
+//}
 
 /**
  * Deinitializes the vector into a undefined state. It must be initialized again
@@ -78,11 +91,11 @@ void deinitVector(Vector* v) {
   free(v->arr);
 }
 
-extern Vector* newByteVector(size_t initSize, const char *contents, size_t num);
+//extern Vector* newByteVector(size_t initSize, const char *contents, size_t num);
 extern Vector* initByteVector(Vector* v, size_t initSize, const char* contents, size_t num);
-extern Vector* newDoubleVector(const double* contents, size_t num);
+//extern Vector* newDoubleVector(const double* contents, size_t num);
 extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num);
-extern Vector* newIntVector(const int* contents, size_t num);
+//extern Vector* newIntVector(const int* contents, size_t num);
 
 /**
  * We want the pointer to the [element] but remember that it isn't the pointer
@@ -148,15 +161,15 @@ Vector* Vector_clear(Vector* v) {
   return v;
 }
 
-void Vector_forEach(const Vector* v, void* scope,
-                    bool (*action)(void* itemPtr, int index, void* scope)) {
-  VectorErr e;
-  bool isFinished = false;
-  for (int i = 0; i < v->length || isFinished; ++i) {
-    void* item = Vector_ptrAt(v, i, &e);
-    isFinished = action(item, i, scope);
-  }
-}
+//void Vector_forEach(const Vector* v, void* scope,
+//                    bool (*action)(void* itemPtr, int index, void* scope)) {
+//  VectorErr e;
+//  bool isFinished = false;
+//  for (int i = 0; i < v->length || isFinished; ++i) {
+//    void* item = Vector_ptrAt(v, i, &e);
+//    isFinished = action(item, i, scope);
+//  }
+//}
 
 /**
  * Returns a pointer to the specified [index] value.

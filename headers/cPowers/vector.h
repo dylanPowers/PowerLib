@@ -32,42 +32,46 @@ typedef enum VectorErr {
   E_RANGE
 } VectorErr;
 
-Vector* newVector(size_t, const void*, size_t, void* (*)(void*, const void*),
-                  void (*)(void*));
-Vector* newVectorWithSize(size_t, size_t, const void*, size_t,
-                          void* (*)(void*, const void*), void (*)(void*));
-Vector* initVector(Vector*, size_t, size_t, const void*, size_t,
-                   void* (*)(void*, const void*), void (*)(void*));
-void destroyVector(Vector**);
+//Vector* newVector(size_t, const void*, size_t, void* (*)(void*, const void*),
+//                  void (*)(void*));
+//Vector* newVectorWithSize(size_t, size_t, const void*, size_t,
+//                          void* (*)(void*, const void*), void (*)(void*));
+
+Vector* initVector(Vector*, size_t, void* (*)(void*, const void*),
+                   void (*)(void*));
+Vector* initVectorCp(Vector*, const Vector*);
+Vector* initVectorAdvanced(Vector*, size_t, size_t, const void*, size_t,
+                           void* (*)(void*, const void*), void (*)(void*));
+//void destroyVector(Vector**);
 void deinitVector(Vector*);
 
 // The following are aliases for common array types
-inline Vector* newByteVector(size_t initSize, const char* contents, size_t num) {
-  return newVectorWithSize(sizeof(char), initSize, contents, num, NULL, NULL); 
-}
+//inline Vector* newByteVector(size_t initSize, const char* contents, size_t num) {
+//  return newVectorWithSize(sizeof(char), initSize, contents, num, NULL, NULL);
+//}
 
 inline Vector* initByteVector(Vector* v, size_t initSize,
                               const char* contents, size_t num) {
-  return initVector(v, sizeof(char), initSize, contents, num, NULL, NULL);
+  return initVectorAdvanced(v, sizeof(char), initSize, contents, num, NULL, NULL);
 }
 
-inline Vector* newDoubleVector(const double* contents, size_t num) {
-  return newVector(sizeof(double), contents, num, NULL, NULL);
-}
+//inline Vector* newDoubleVector(const double* contents, size_t num) {
+//  return newVector(sizeof(double), contents, num, NULL, NULL);
+//}
 
 inline Vector* initDoubleVector(Vector* v, const char* contents, size_t num) {
-  return initVector(v, sizeof(double), 0, contents, num, NULL, NULL);
+  return initVectorAdvanced(v, sizeof(double), 0, contents, num, NULL, NULL);
 }
 
-inline Vector* newIntVector(const int* contents, size_t num) {
-  return newVector(sizeof(int), contents, num, NULL, NULL);
-}
+//inline Vector* newIntVector(const int* contents, size_t num) {
+//  return newVector(sizeof(int), contents, num, NULL, NULL);
+//}
 
 void* Vector_add(Vector*, const void*, VectorErr*);
 Vector* Vector_cat(Vector*, const Vector*, VectorErr*);
 Vector* Vector_catPrimitive(Vector*, const void*, size_t, VectorErr*);
 Vector* Vector_clear(Vector*);
-void Vector_forEach(const Vector*, void*, bool (*)(void*, int, void*));
+//void Vector_forEach(const Vector*, void*, bool (*)(void*, int, void*));
 void* Vector_ptrAt(const Vector*, int, VectorErr*);
 
 #endif
