@@ -13,10 +13,10 @@
  * @param  contents Primitive C string to initialize to.
  * @return          A pointer to the initialized string.
  */
-String* newString(const char *contents) {
-  size_t len = contents ? strlen(contents) : 0;
-  return newByteVector(_STRING_VECTOR_INIT_SIZE, contents, len);
-}
+//String* newString(const char *contents) {
+//  size_t len = contents ? strlen(contents) : 0;
+//  return newByteVector(_STRING_VECTOR_INIT_SIZE, contents, len);
+//}
 
 String* initString(String* str, const char* contents) {
   size_t len = contents ? strlen(contents) : 0;

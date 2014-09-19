@@ -7,7 +7,6 @@
 typedef Vector String;
 typedef VectorErr StringErr;
 
-String* newString(const char*);
 String* initString(String*, const char*);
 String* initStringCp(String*, const String*);
 void deinitString(String*);
