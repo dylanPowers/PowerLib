@@ -36,6 +36,10 @@ char String_charAt(const String* str, int index, StringErr* e) {
   return *(char*) Vector_ptrAt(str, index, e);
 }
 
+int String_cmp(const String* str, const String* comparedToStr) {
+  return strcmp(str, comparedToStr);
+}
+
 /**
  * String vector version of fgets. Works exactly like fgets except it's not
  * limited to a predefined string size.

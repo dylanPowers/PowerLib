@@ -148,12 +148,13 @@ Vector* Vector_clear(Vector* v) {
   return v;
 }
 
-void Vector_forEach(const Vector* v, 
-                   void (*action)(void* itemPtr, int index)) {
+void Vector_forEach(const Vector* v, void* scope,
+                    bool (*action)(void* itemPtr, int index, void* scope)) {
   VectorErr e;
-  for (int i = 0; i < v->length; ++i) {
+  bool isFinished = false;
+  for (int i = 0; i < v->length || isFinished; ++i) {
     void* item = Vector_ptrAt(v, i, &e);
-    action(item, i);
+    isFinished = action(item, i, scope);
   }
 }
 

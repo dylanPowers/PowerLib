@@ -1,7 +1,8 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include "stdlib.h"
+#include <stdbool.h>
+#include <stdlib.h>
 
 /**
  * Vector is a growable array implementation for C. The idea is for it to work
@@ -66,7 +67,7 @@ void* Vector_add(Vector*, const void*, VectorErr*);
 Vector* Vector_cat(Vector*, const Vector*, VectorErr*);
 Vector* Vector_catPrimitive(Vector*, const void*, size_t, VectorErr*);
 Vector* Vector_clear(Vector*);
-void Vector_forEach(const Vector*, void (*)(void*, int));
+void Vector_forEach(const Vector*, void*, bool (*)(void*, int, void*));
 void* Vector_ptrAt(const Vector*, int, VectorErr*);
 
 #endif
