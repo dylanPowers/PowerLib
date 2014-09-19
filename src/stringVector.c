@@ -1,5 +1,7 @@
 #include "stringVector.h"
 
+#include "string.h"
+
 #define _STRING_VECTOR_INIT_SIZE 64
 
 /**
@@ -31,7 +33,7 @@ String* initStringCp(String* str, const String* copyString) {
  * limited to a predefined string size. 
  * The Vector given as [str] better be of char* type!
  */
-void StringFgets(String* str, FILE* fd, VectorErr* e) {
+void String_fgets(String* str, FILE* fd, StringErr* e) {
   if (str->_typeSize != sizeof(char)) {
     *e = E_INCOMPATIBLE_TYPES;
     return;
@@ -42,11 +44,14 @@ void StringFgets(String* str, FILE* fd, VectorErr* e) {
 
   fgets(str->arr, str->_arrSize, fd);
   str->length = strlen(str->arr);
-  while (*((char*) Vector_ptrAt(str, str->length - 1, e)) != '\n' &&
-         !feof(fd) && !*e) {
+  while (String_charAt(str, str->length - 1, e) != '\n' && !feof(fd) && !*e) {
     char tmpStr[1024];
     fgets(tmpStr, 1024, fd);
     size_t len = strlen(tmpStr);
     Vector_catPrimitive(str, tmpStr, len, e);
   }
+}
+
+char String_charAt(const String* str, int index, StringErr* e) {
+  return *(char*) Vector_ptrAt(str, index, e);
 }

@@ -2,15 +2,16 @@
 #define STRING_VECTOR_H
 
 #include "stdio.h"
-#include "string.h"
 #include "vector.h"
 
 typedef Vector String;
+typedef VectorErr StringErr;
 
 String* newString(const char*);
 String* initString(String*, const char*);
 String* initStringCp(String*, const String*);
 
-void StringFgets(String* str, FILE* fd, VectorErr*);
+void String_fgets(String* str, FILE* fd, StringErr*);
+char String_charAt(const String*, int, StringErr*);
 
 #endif
