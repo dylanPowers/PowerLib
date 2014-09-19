@@ -60,13 +60,13 @@ void String_fgets(String* str, FILE* fd, StringErr* e) {
   }
 }
 
-void String_tok(String* str, Vector* tokenContainer, String* delimiters,
+void String_tok(String* str, Vector* tokenContainer, char* delimiters,
                 StringErr* e) {
-  char* token = strtok(str->arr, delimiters->arr);
+  char* token = strtok(str->arr, delimiters);
   while (token != NULL) {
     String strToken;
     initString(&strToken, token);
     Vector_add(tokenContainer, &strToken, e);
-    token = strtok(NULL, delimiters->arr);
+    token = strtok(NULL, delimiters);
   }
 }

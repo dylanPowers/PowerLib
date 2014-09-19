@@ -13,6 +13,6 @@ void deinitString(String*);
 
 char String_charAt(const String*, int, StringErr*);
 void String_fgets(String*, FILE*, StringErr*);
-void String_tok(String*, Vector*, String*, StringErr*);
+void String_tok(String*, Vector*, char*, StringErr*);
 
 #endif
