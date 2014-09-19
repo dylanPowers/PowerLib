@@ -28,9 +28,13 @@ String* initStringCp(String* str, const String* copyString) {
                         copyString->length);
 }
 
+char String_charAt(const String* str, int index, StringErr* e) {
+  return *(char*) Vector_ptrAt(str, index, e);
+}
+
 /**
  * String vector version of fgets. Works exactly like fgets except it's not
- * limited to a predefined string size. 
+ * limited to a predefined string size.
  * The Vector given as [str] better be of char* type!
  */
 void String_fgets(String* str, FILE* fd, StringErr* e) {
@@ -52,6 +56,13 @@ void String_fgets(String* str, FILE* fd, StringErr* e) {
   }
 }
 
-char String_charAt(const String* str, int index, StringErr* e) {
-  return *(char*) Vector_ptrAt(str, index, e);
+void String_tok(String* str, Vector* tokenContainer, String* delimiters,
+                StringErr* e) {
+  char* token = strtok(str->arr, delimiters->arr);
+  while (token != NULL) {
+    String strToken;
+    initString(&strToken, token);
+    Vector_add(tokenContainer, &strToken, e);
+    token = strtok(NULL, delimiters->arr);
+  }
 }

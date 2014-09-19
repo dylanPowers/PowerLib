@@ -11,7 +11,8 @@ String* newString(const char*);
 String* initString(String*, const char*);
 String* initStringCp(String*, const String*);
 
-void String_fgets(String* str, FILE* fd, StringErr*);
 char String_charAt(const String*, int, StringErr*);
+void String_fgets(String*, FILE*, StringErr*);
+void String_tok(String*, Vector*, String*, StringErr*);
 
 #endif
