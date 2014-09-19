@@ -28,6 +28,10 @@ String* initStringCp(String* str, const String* copyString) {
                         copyString->length);
 }
 
+void deinitString(String* str) {
+  deinitVector(str);
+}
+
 char String_charAt(const String* str, int index, StringErr* e) {
   return *(char*) Vector_ptrAt(str, index, e);
 }

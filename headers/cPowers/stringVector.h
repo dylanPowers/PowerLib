@@ -10,6 +10,7 @@ typedef VectorErr StringErr;
 String* newString(const char*);
 String* initString(String*, const char*);
 String* initStringCp(String*, const String*);
+void deinitString(String*);
 
 char String_charAt(const String*, int, StringErr*);
 void String_fgets(String*, FILE*, StringErr*);
