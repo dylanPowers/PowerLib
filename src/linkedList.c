@@ -6,13 +6,6 @@
 SingleLinkedNode* _LinkedList_lastNode(const LinkedList*);
 void _LinkedList_nullifyLast(LinkedList*, SingleLinkedNode*);
 
-//LinkedList* newLinkedList(int typeSize,
-//                          void* (*_copyInitializer)(void*, const void*),
-//                          void (*deInitializer)(void*)) {
-//  LinkedList* list = (LinkedList*) malloc(sizeof(LinkedList));
-//  return initLinkedList(list, typeSize, _copyInitializer, deInitializer);
-//}
-
 LinkedList* initLinkedList(LinkedList* list, size_t typeSize,
                            void* (*copyInitializer)(void*, const void*), 
                            void (*deInitializer)(void*)) {
@@ -36,21 +29,11 @@ LinkedList* initLinkedListCp(LinkedList* list, const LinkedList* copy) {
   return list;
 }
 
-//void destroyLinkedList(LinkedList** listPtr) {
-//  deinitLinkedList(*listPtr);
-//  free(*listPtr);
-//  *listPtr = NULL;
-//}
 
 void deinitLinkedList(LinkedList* list) {
   LinkedList_clear(list);
 }
 
-//SingleLinkedNode* newSingleLinkedNode(const void* data, int typeSize,
-//                                      void* (*copyInitializer)(void*, const void*)) {
-//  SingleLinkedNode* node = (SingleLinkedNode*) malloc(sizeof(SingleLinkedNode));
-//  return initSingleLinkedNode(node, data, typeSize, copyInitializer);
-//}
 
 SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode* node, const void* data, 
                                        size_t typeSize,
@@ -61,12 +44,6 @@ SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode* node, const void* data,
   return node;
 }
 
-//void destroySingleLinkedNode(SingleLinkedNode** nodePtr,
-//                             void (*deInitializer)(void*)) {
-//  deInitializer((*nodePtr)->data);
-//  free(*nodePtr);
-//  *nodePtr = NULL;
-//}
 
 void deinitSingleLinkedNode(SingleLinkedNode* node,
                             void (*deInitializer)(void*)) {
@@ -102,13 +79,6 @@ void* LinkedList_first(const LinkedList* list) {
   return list->firstNode->data;
 }
 
-//void LinkedList_forEach(const LinkedList* list, void (*action)(void*)) {
-//  SingleLinkedNode* nextNode = list->firstNode;
-//  while (nextNode != NULL) {
-//    action(nextNode->data);
-//    nextNode = nextNode->next;
-//  }
-//}
 
 void* LinkedList_last(const LinkedList* list) {
   return _LinkedList_lastNode(list)->data;

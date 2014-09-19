@@ -19,18 +19,13 @@ struct SingleLinkedNode {
   SingleLinkedNode* next;
 };
 
-//LinkedList* newLinkedList(int, void* (*)(void*, const void*), void (*)(void*));
 LinkedList* initLinkedList(LinkedList*, size_t, void* (*)(void*, const void*),
                            void (*)(void*));
 LinkedList* initLinkedListCp(LinkedList*, const LinkedList*);
-//void destroyLinkedList(LinkedList**);
 void deinitLinkedList(LinkedList*);
 
-//SingleLinkedNode* newSingleLinkedNode(const void*, int,
-//                                      void* (*)(void*, const void*));
 SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode*, const void*, size_t,
                                        void* (*)(void*, const void*));
-//void destroySingleLinkedNode(SingleLinkedNode**, void (*)(void*));
 void deinitSingleLinkedNode(SingleLinkedNode*, void (*)(void*));
 
 void LinkedList_prepend(LinkedList*, const void* data);
@@ -42,7 +37,5 @@ void* LinkedList_last(const LinkedList*);
 void LinkedList_clear(LinkedList*);
 void LinkedList_removeFirst(LinkedList*);
 void LinkedList_removeLast(LinkedList*);
-
-//void LinkedList_forEach(const LinkedList*, void (*)(void*));
 
 #endif

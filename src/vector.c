@@ -10,28 +10,6 @@ void* _Vector_calcPtrAt(const Vector*, int);
 void* _Vector_calcDanglingPtr(const Vector*);
 void _Vector_resize(Vector *, size_t, VectorErr *);
 
-/**
- * This function allocates memory for a new Vector and appropriately
- * initializes it. 
- * Know that [contents] is an optional argument. Set it to NULL or
- * [num] to 0 and it will be ignored.
- */
-//Vector* newVector(size_t typeSize, const void* contents, size_t num,
-//                  void* (*initializer)(void*, const void*),
-//                  void (*deInitializer)(void*)) {
-//  return newVectorWithSize(typeSize, 0, contents, num, initializer,
-//                           deInitializer);
-//}
-
-//Vector* newVectorWithSize(size_t typeSize, size_t initSize,
-//                          const void* contents, size_t num,
-//                          void* (*initializer)(void*, const void*),
-//                          void (*deInitializer)(void*)) {
-//  Vector* vec = (Vector*) malloc(sizeof(Vector));
-//  return initVector(vec, typeSize, initSize, contents, num, initializer,
-//                    deInitializer);
-//}
-
 Vector* initVector(Vector* v, size_t typeSize,
                    void* (*initializer)(void*, const void*),
                    void (*deInitializer)(void*)) {
@@ -76,12 +54,6 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
   return v;
 }
 
-//void destroyVector(Vector** v) {
-//  deinitVector(*v);
-//  free(*v);
-//  *v = NULL;
-//}
-
 /**
  * Deinitializes the vector into a undefined state. It must be initialized again
  * to be reused.
@@ -91,11 +63,8 @@ void deinitVector(Vector* v) {
   free(v->arr);
 }
 
-//extern Vector* newByteVector(size_t initSize, const char *contents, size_t num);
 extern Vector* initByteVector(Vector* v, size_t initSize, const char* contents, size_t num);
-//extern Vector* newDoubleVector(const double* contents, size_t num);
 extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num);
-//extern Vector* newIntVector(const int* contents, size_t num);
 
 /**
  * We want the pointer to the [element] but remember that it isn't the pointer
@@ -105,7 +74,7 @@ extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num);
  */
 void* Vector_add(Vector* v, const void* element, VectorErr* e) {
   _Vector_resize(v, 1, e);
-  if (*e == E_NOMEMS) {
+  if (*e == V_E_NOMEMS) {
     return NULL;
   }
 
@@ -121,7 +90,7 @@ void* Vector_add(Vector* v, const void* element, VectorErr* e) {
  */
 Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e) {
   if (v->_typeSize != other->_typeSize) {
-    *e = E_INCOMPATIBLE_TYPES;
+    *e = V_E_INCOMPATIBLE_TYPES;
     return v;
   }
 
@@ -131,7 +100,7 @@ Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e) {
 Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, VectorErr* e) {
   if (num > 0) {
     _Vector_resize(v, num, e);
-    if (*e == E_NOMEMS) {
+    if (*e == V_E_NOMEMS) {
       return v;
     }
 
@@ -161,27 +130,30 @@ Vector* Vector_clear(Vector* v) {
   return v;
 }
 
-//void Vector_forEach(const Vector* v, void* scope,
-//                    bool (*action)(void* itemPtr, int index, void* scope)) {
-//  VectorErr e;
-//  bool isFinished = false;
-//  for (int i = 0; i < v->length || isFinished; ++i) {
-//    void* item = Vector_ptrAt(v, i, &e);
-//    isFinished = action(item, i, scope);
-//  }
-//}
-
 /**
  * Returns a pointer to the specified [index] value.
  * Error if index is out of range.
  */
 void* Vector_ptrAt(const Vector* v, int index, VectorErr* e) { 
   if (index >= v->length || index < 0) {
-    *e = E_RANGE;
+    *e = V_E_RANGE;
     return v->arr;
   } 
 
   return _Vector_calcPtrAt(v, index);
+}
+
+void Vector_removeLast(Vector* v, VectorErr* e) {
+  if (v->length == 0) {
+    *e = V_E_EMPTY;
+  } else {
+    int last = v->length - 1;
+    if (v->_deInitializer) {
+      v->_deInitializer((void*) Vector_ptrAt(v, last, e));
+    }
+
+    v->length--;
+  }
 }
 
 void* _Vector_appendCopy(Vector* v, const void* element) {
@@ -218,7 +190,7 @@ void _Vector_resize(Vector *v, size_t numAdded, VectorErr *e) {
     void* newMems = realloc(v->arr, v->_arrSize * v->_typeSize);
     if (newMems == NULL) {
       v->_arrSize = v->length;
-      *e = E_NOMEMS;
+      *e = V_E_NOMEMS;
     } else {
       v->arr = newMems;
     }

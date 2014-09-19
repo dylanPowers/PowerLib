@@ -37,7 +37,7 @@ char String_charAt(const String* str, int index, StringErr* e) {
 }
 
 int String_cmp(const String* str, const String* comparedToStr) {
-  return strcmp(str, comparedToStr);
+  return strcmp(str->arr, comparedToStr->arr);
 }
 
 /**
@@ -47,7 +47,7 @@ int String_cmp(const String* str, const String* comparedToStr) {
  */
 void String_fgets(String* str, FILE* fd, StringErr* e) {
   if (str->_typeSize != sizeof(char)) {
-    *e = E_INCOMPATIBLE_TYPES;
+    *e = V_E_INCOMPATIBLE_TYPES;
     return;
   }
 
@@ -66,7 +66,7 @@ void String_fgets(String* str, FILE* fd, StringErr* e) {
 
 void String_tok(String* str, Vector* tokenContainer, char* delimiters,
                 StringErr* e) {
-  char* token = strtok(str->arr, delimiters);
+  char *token = strtok(str->arr, delimiters);
   while (token != NULL) {
     String strToken;
     initString(&strToken, token);
