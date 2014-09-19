@@ -71,6 +71,8 @@ void String_tok(String* str, Vector* tokenContainer, char* delimiters,
     String strToken;
     initString(&strToken, token);
     Vector_add(tokenContainer, &strToken, e);
+
+    deinitString(&strToken);
     token = strtok(NULL, delimiters);
   }
 }
