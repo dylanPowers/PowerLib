@@ -130,6 +130,17 @@ Vector* Vector_clear(Vector* v) {
   return v;
 }
 
+void* Vector_last(const Vector* v, VectorErr* e) {
+  if (v->length == 0) {
+    *e = V_E_EMPTY;
+  } else {
+    int last = v->length - 1;
+    return Vector_ptrAt(v, last, e);
+  }
+
+  return NULL;
+}
+
 /**
  * Returns a pointer to the specified [index] value.
  * Error if index is out of range.
@@ -144,12 +155,10 @@ void* Vector_ptrAt(const Vector* v, int index, VectorErr* e) {
 }
 
 void Vector_removeLast(Vector* v, VectorErr* e) {
-  if (v->length == 0) {
-    *e = V_E_EMPTY;
-  } else {
-    int last = v->length - 1;
+  void* lastEl = Vector_last(v, e);
+  if (!*e) {
     if (v->_deInitializer) {
-      v->_deInitializer((void*) Vector_ptrAt(v, last, e));
+      v->_deInitializer(lastEl);
     }
 
     v->length--;
