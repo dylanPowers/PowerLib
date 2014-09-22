@@ -11,10 +11,9 @@ String* initString(String*, const char*);
 String* initStringCp(String*, const String*);
 void deinitString(String*);
 
-char String_charAt(const String*, int, StringErr*);
+char String_charAt(String*, size_t);
 int String_cmp(const String*, const String*);
-int String_cmpPrimitive(const String*, const char*);
-void String_fgets(String*, FILE*, StringErr*);
-void String_tok(String*, Vector*, char*, StringErr*);
+void String_fgets(String*, FILE*);
+void String_tok(String*, Vector*, char*);
 
 #endif
