@@ -54,6 +54,7 @@ Vector* Vector_cat(Vector*, const Vector*, VectorErr*);
 Vector* Vector_catPrimitive(Vector*, const void*, size_t, VectorErr*);
 Vector* Vector_clear(Vector*);
 void* Vector_ptrAt(const Vector*, int, VectorErr*);
+void Vector_reverse(const Vector*, Vector*);
 void* Vector_last(const Vector*, VectorErr*);
 void Vector_removeLast(Vector*, VectorErr*);
 

@@ -165,6 +165,13 @@ void Vector_removeLast(Vector* v, VectorErr* e) {
   }
 }
 
+void Vector_reverse(const Vector* v, Vector* reversed) {
+  VectorErr e;
+  for (size_t i = v->length - 1; i >= 0; --i) {
+    Vector_add(reversed, _Vector_calcPtrAt(v, i), &e);
+  }
+}
+
 void* _Vector_appendCopy(Vector* v, const void* element) {
   void* arrayPosition = _Vector_calcDanglingPtr(v);
   if (v->_copyInitializer) {
