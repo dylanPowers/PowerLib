@@ -40,6 +40,10 @@ int String_cmp(const String* str, const String* comparedToStr) {
   return strcmp(str->arr, comparedToStr->arr);
 }
 
+int String_cmpPrimitive(const String* str, const char* comparedToStr) {
+  return strcmp(str->arr, comparedToStr);
+}
+
 /**
  * String vector version of fgets. Works exactly like fgets except it's not
  * limited to a predefined string size.
