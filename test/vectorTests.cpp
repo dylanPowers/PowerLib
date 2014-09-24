@@ -52,3 +52,25 @@ TEST_F(InitializationOfAVector, HasCorrectLength) {
   initVector(&v, sizeof(int), NULL, NULL);
   EXPECT_EQ(v.length, 0);
 }
+
+class VectorMethods : public InitializationOfAVector {
+  public:
+
+  VectorMethods() {
+    initVector(&v, sizeof(int), NULL, NULL);
+  };
+};
+
+TEST_F(VectorMethods, ReverseCompletes) {
+  Vector reversed;
+  initVector(&reversed, sizeof(int), NULL, NULL);
+  int nums[3] = { 1, 2, 3 };
+  Vector_catPrimitive(&v, nums, 3);
+  Vector_reverse(&v, &reversed);
+  EXPECT_EQ(*(int*) reversed.arr, 3);
+  EXPECT_EQ(*((int*) reversed.arr + 1), 2);
+  EXPECT_EQ(*((int*) reversed.arr + 2), 1);
+
+  deinitVector(&reversed);
+}
+

@@ -10,8 +10,6 @@
  * hold any data type as long as the type size is given.
  */
 
-//typedef enum VectorErr VectorErr;
-
 /**
 * These are the various errors that a vector can give.
 */

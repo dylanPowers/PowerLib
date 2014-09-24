@@ -165,8 +165,8 @@ void Vector_removeLast(Vector* v) {
 }
 
 void Vector_reverse(const Vector* v, Vector* reversed) {
-  for (size_t i = v->length - 1; i >= 0; --i) {
-    Vector_add(reversed, _Vector_calcPtrAt(v, i));
+  for (size_t i = 0; i < v->length; ++i) {
+    Vector_add(reversed, _Vector_calcPtrAt(v, v->length - 1 - i));
   }
 }
 

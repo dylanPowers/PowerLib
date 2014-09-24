@@ -4,7 +4,7 @@ project(cPowers)
 set(CMAKE_C_FLAGS "-Wall -std=c99")
 
 include_directories(headers/cPowers)
-add_library(cPowers src/vector.c src/stringVector.c src/linkedList.c)
+add_library(cPowers STATIC src/vector.c src/stringVector.c src/linkedList.c)
 
 option(test_cPowers "Build all tests." OFF)
 
