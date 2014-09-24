@@ -13,7 +13,7 @@ class InitializationOfAString : public ::testing::Test {
   virtual ~InitializationOfAString() {
     deinitString(&str);
   }
-  
+
   String str;
 };
 
