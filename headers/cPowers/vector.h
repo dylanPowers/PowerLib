@@ -10,17 +10,7 @@
  * hold any data type as long as the type size is given.
  */
 
-// Look, a mutherfuckin vector. Let's reinvent the rock
-typedef struct Vector  {
-  void* arr; // Array yo
-  size_t length; // Woah! We're told a length?
-
-  // Privates. No touchy!
-  size_t _arrSize; // Allocated array size
-  void* (*_copyInitializer)(void*, const void*);
-  void (*_deInitializer)(void*);
-  size_t _typeSize;
-} Vector;
+//typedef enum VectorErr VectorErr;
 
 /**
 * These are the various errors that a vector can give.
@@ -32,6 +22,19 @@ typedef enum VectorErr {
   V_E_RANGE,
   V_E_EMPTY
 } VectorErr;
+
+// Look, a mutherfuckin vector. Let's reinvent the rock
+typedef struct Vector  {
+  void* arr; // Array yo
+  VectorErr e;
+  size_t length; // Woah! We're told a length?
+
+  // Privates. No touchy!
+  size_t _arrSize; // Allocated array size
+  void* (*_copyInitializer)(void*, const void*);
+  void (*_deInitializer)(void*);
+  size_t _typeSize;
+} Vector;
 
 Vector* initVector(Vector*, size_t, void* (*)(void*, const void*),
                    void (*)(void*));
@@ -49,12 +52,13 @@ inline Vector* initDoubleVector(Vector* v, const char* contents, size_t num) {
   return initVectorAdvanced(v, sizeof(double), 0, contents, num, NULL, NULL);
 }
 
-void* Vector_add(Vector*, const void*, VectorErr*);
-Vector* Vector_cat(Vector*, const Vector*, VectorErr*);
-Vector* Vector_catPrimitive(Vector*, const void*, size_t, VectorErr*);
+void* Vector_add(Vector*, const void*);
+Vector* Vector_cat(Vector*, const Vector*);
+Vector* Vector_catPrimitive(Vector*, const void*, size_t);
 Vector* Vector_clear(Vector*);
-void* Vector_ptrAt(const Vector*, int, VectorErr*);
-void* Vector_last(const Vector*, VectorErr*);
-void Vector_removeLast(Vector*, VectorErr*);
+void* Vector_at(Vector*, size_t);
+void Vector_reverse(const Vector*, Vector*);
+void* Vector_last(Vector*);
+void Vector_removeLast(Vector*);
 
 #endif

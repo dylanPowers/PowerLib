@@ -6,9 +6,9 @@
 
 void* _Vector_appendCopy(Vector*, const void*);
 void _Vector_appendNull(const Vector*);
-void* _Vector_calcPtrAt(const Vector*, int);
+void* _Vector_calcPtrAt(const Vector*, size_t);
 void* _Vector_calcDanglingPtr(const Vector*);
-void _Vector_resize(Vector *, size_t, VectorErr *);
+void _Vector_resize(Vector *, size_t);
 
 Vector* initVector(Vector* v, size_t typeSize,
                    void* (*initializer)(void*, const void*),
@@ -49,8 +49,7 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
   v->_typeSize = typeSize;
   v->length = 0;
 
-  VectorErr verr;
-  Vector_catPrimitive(v, contents, num, &verr);
+  Vector_catPrimitive(v, contents, num);
 
   return v;
 }
@@ -73,9 +72,9 @@ extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num);
  * Returned is the address to it's location in the Vector 
  * (same as VectorPtrAt())
  */
-void* Vector_add(Vector* v, const void* element, VectorErr* e) {
-  _Vector_resize(v, 1, e);
-  if (*e == V_E_NOMEMS) {
+void* Vector_add(Vector* v, const void* element) {
+  _Vector_resize(v, 1);
+  if (v->e == V_E_NOMEMS) {
     return NULL;
   }
 
@@ -89,19 +88,19 @@ void* Vector_add(Vector* v, const void* element, VectorErr* e) {
  * Copy one Vector onto the end of another. Vector [other] gets appended to
  * Vector [v] in this case.
  */
-Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e) {
+Vector* Vector_cat(Vector* v, const Vector* other) {
   if (v->_typeSize != other->_typeSize) {
-    *e = V_E_INCOMPATIBLE_TYPES;
+    v->e = V_E_INCOMPATIBLE_TYPES;
     return v;
   }
 
-  return Vector_catPrimitive(v, other->arr, other->length, e);
+  return Vector_catPrimitive(v, other->arr, other->length);
 }
 
-Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, VectorErr* e) {
+Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num) {
   if (num > 0) {
-    _Vector_resize(v, num, e);
-    if (*e == V_E_NOMEMS) {
+    _Vector_resize(v, num);
+    if (v->e == V_E_NOMEMS) {
       return v;
     }
 
@@ -118,10 +117,9 @@ Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, VectorErr* e
 }
 
 Vector* Vector_clear(Vector* v) {
-  VectorErr verr;
   if (v->_deInitializer) {
     for (int i = 0; i < v->length; ++i) {
-      v->_deInitializer((void*) Vector_ptrAt(v, i, &verr));
+      v->_deInitializer((void*) Vector_at(v, i));
     }
   }
 
@@ -131,12 +129,12 @@ Vector* Vector_clear(Vector* v) {
   return v;
 }
 
-void* Vector_last(const Vector* v, VectorErr* e) {
+void* Vector_last(Vector* v) {
   if (v->length == 0) {
-    *e = V_E_EMPTY;
+    v->e = V_E_EMPTY;
   } else {
-    int last = v->length - 1;
-    return Vector_ptrAt(v, last, e);
+    size_t last = v->length - 1;
+    return Vector_at(v, last);
   }
 
   return NULL;
@@ -146,23 +144,29 @@ void* Vector_last(const Vector* v, VectorErr* e) {
  * Returns a pointer to the specified [index] value.
  * Error if index is out of range.
  */
-void* Vector_ptrAt(const Vector* v, int index, VectorErr* e) { 
+void* Vector_at(Vector* v, size_t index) {
   if (index >= v->length || index < 0) {
-    *e = V_E_RANGE;
+    v->e = V_E_RANGE;
     return v->arr;
   } 
 
   return _Vector_calcPtrAt(v, index);
 }
 
-void Vector_removeLast(Vector* v, VectorErr* e) {
-  void* lastEl = Vector_last(v, e);
-  if (!*e) {
+void Vector_removeLast(Vector* v) {
+  void* lastEl = Vector_last(v);
+  if (!v->e) {
     if (v->_deInitializer) {
       v->_deInitializer(lastEl);
     }
 
     v->length--;
+  }
+}
+
+void Vector_reverse(const Vector* v, Vector* reversed) {
+  for (size_t i = v->length - 1; i >= 0; --i) {
+    Vector_add(reversed, _Vector_calcPtrAt(v, i));
   }
 }
 
@@ -184,7 +188,7 @@ void _Vector_appendNull(const Vector* v) {
   free(nilly);
 }
 
-void* _Vector_calcPtrAt(const Vector* v, int index) {
+void* _Vector_calcPtrAt(const Vector* v, size_t index) {
   return ((char*) v->arr) + index * v->_typeSize;
 }
 
@@ -192,7 +196,7 @@ void* _Vector_calcDanglingPtr(const Vector* v) {
   return _Vector_calcPtrAt(v, v->length);
 }
 
-void _Vector_resize(Vector *v, size_t numAdded, VectorErr *e) {
+void _Vector_resize(Vector *v, size_t numAdded) {
   if (v->_arrSize <= v->length + numAdded) {
     v->_arrSize = v->length + numAdded + 1 /* Null element */;
     v->_arrSize *= 2; // For good measure.
@@ -200,7 +204,7 @@ void _Vector_resize(Vector *v, size_t numAdded, VectorErr *e) {
     void* newMems = realloc(v->arr, v->_arrSize * v->_typeSize);
     if (newMems == NULL) {
       v->_arrSize = v->length;
-      *e = V_E_NOMEMS;
+      v->e = V_E_NOMEMS;
     } else {
       v->arr = newMems;
     }
