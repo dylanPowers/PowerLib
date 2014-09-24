@@ -44,6 +44,7 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
   initSize = initSize > num ? initSize: num + 1;
   v->arr = malloc(typeSize * initSize);
   v->_arrSize = initSize;
+  v->_copyInitializer = initializer;
   v->_deInitializer = deInitializer;
   v->_typeSize = typeSize;
   v->length = 0;
