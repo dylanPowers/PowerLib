@@ -6,9 +6,8 @@ set(CMAKE_C_FLAGS "-Wall -std=c99")
 include_directories(headers/cPowers)
 add_library(cPowers src/vector.c src/stringVector.c src/linkedList.c)
 
-# This is a trick for CLion
 option(test_cPowers "Build all tests." OFF)
-set(test_cPowers test_cPowers)
+
 if (test_cPowers)
   set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 
