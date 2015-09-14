@@ -11,23 +11,27 @@
  * allocated for a new String.
  * @param  contents Primitive C string to initialize to.
  * @return          A pointer to the initialized string.
+ * @error           V_E_NOMEMS
  */
-String* initString(String* str, const char* contents) {
+String* initString(String* str, const char* contents, VectorErr *e) {
   size_t len = contents ? strlen(contents) : 0;
-  return initByteVector(str, _STRING_VECTOR_INIT_SIZE, contents, len);
+  return initByteVector(str, _STRING_VECTOR_INIT_SIZE, contents, len, e);
 }
 
-String* initStringCp(String* str, const String* copyString) {
+String* initStringCp(String* str, const String* copyString, VectorErr *e) {
   return initByteVector(str, copyString->_arrSize, copyString->arr,
-                        copyString->length);
+                        copyString->length, e);
 }
 
 void deinitString(String* str) {
   deinitVector(str);
 }
 
-char String_charAt(String* str, size_t index) {
-  return *(char*) Vector_at(str, index);
+/**
+ * @error  V_E_RANGE
+ */
+char String_charAt(String* str, size_t index, VectorErr* e) {
+  return *(char*) Vector_at(str, index, e);
 }
 
 int String_cmp(const String* str, const String* comparedToStr) {
@@ -38,10 +42,12 @@ int String_cmp(const String* str, const String* comparedToStr) {
  * String vector version of fgets. Works exactly like fgets except it's not
  * limited to a predefined string size.
  * The Vector given as [str] better be of char* type!
+ * @error  V_E_INCOMPATIBLE_TYPES
+ * @error  V_E_NOMEMS
  */
-void String_fgets(String* str, FILE* fd) {
+void String_fgets(String* str, FILE* fd, VectorErr* e) {
   if (str->_typeSize != sizeof(char)) {
-    str->e = V_E_INCOMPATIBLE_TYPES;
+    *e = V_E_INCOMPATIBLE_TYPES;
     return;
   }
 
@@ -50,20 +56,25 @@ void String_fgets(String* str, FILE* fd) {
 
   fgets(str->arr, (int) str->_arrSize, fd);
   str->length = strlen(str->arr);
-  while (String_charAt(str, str->length - 1) != '\n' && !feof(fd) && !str->e) {
-    char tmpStr[1024];
-    fgets(tmpStr, 1024, fd);
-    size_t len = strlen(tmpStr);
-    Vector_catPrimitive(str, tmpStr, len);
+  if (str->length) {
+    while (!*e && *(char*) Vector_last(str, e) != '\n' && !feof(fd)) {
+      char tmpStr[1024];
+      fgets(tmpStr, 1024, fd);
+      size_t len = strlen(tmpStr);
+      Vector_catPrimitive(str, tmpStr, len, e);
+    }
   }
 }
 
-void String_tok(String* str, Vector* tokenContainer, char* delimiters) {
+/**
+ * @error  V_E_NOMEMS
+ */
+void String_tok(String* str, Vector* tokenContainer, char* delimiters, VectorErr* e) {
   char *token = strtok(str->arr, delimiters);
   while (token != NULL) {
     String strToken;
-    initString(&strToken, token);
-    Vector_add(tokenContainer, &strToken);
+    initString(&strToken, token, e);
+    Vector_add(tokenContainer, &strToken, e);
 
     deinitString(&strToken);
     token = strtok(NULL, delimiters);

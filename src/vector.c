@@ -8,19 +8,25 @@ void* _Vector_appendCopy(Vector*, const void*);
 void _Vector_appendNull(const Vector*);
 void* _Vector_calcPtrAt(const Vector*, size_t);
 void* _Vector_calcDanglingPtr(const Vector*);
-void _Vector_resize(Vector *, size_t);
+void _Vector_resize(Vector *, size_t, VectorErr*);
 
+/**
+ * @errors  V_E_NOMEMS
+ */
 Vector* initVector(Vector* v, size_t typeSize,
                    void* (*initializer)(void*, const void*),
-                   void (*deInitializer)(void*)) {
+                   void (*deInitializer)(void*), VectorErr* e) {
   return initVectorAdvanced(v, typeSize, _VECTOR_DEFAULT_INIT_SIZE, NULL, 0,
-                            initializer, deInitializer);
+                            initializer, deInitializer, e);
 }
 
-Vector* initVectorCp(Vector* v, const Vector* copy) {
+/**
+ * @errors  V_E_NOMEMS
+ */
+Vector* initVectorCp(Vector* v, const Vector* copy, VectorErr* e) {
   return initVectorAdvanced(v, copy->_typeSize, copy->_arrSize,
                             copy->arr, copy->length, copy->_copyInitializer,
-                            copy->_deInitializer);
+                            copy->_deInitializer, e);
 }
 
 /**
@@ -32,14 +38,15 @@ Vector* initVectorCp(Vector* v, const Vector* copy) {
  * However, if [num] is given, then the
  * greater of [initSize] or [num] is used. [contents] is an optional
  * initialization array that will be copied into the vector. [num] is the
- * number of elements in [contents]. [deconstructor] is the function that is
- * used to dispose of elements in the vector when needed and is required for
- * anything that's been dynamically allocated.  
+ * number of elements in [contents]. [initializer] is the function used to
+ * copy elements into the vector. [deInitializer] is the function that is
+ * used to dispose of elements in the vector when they are removed.
+ * @errors V_E_NOMEMS
  */
 Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
                            const void* contents, size_t num,
                            void* (*initializer)(void*, const void*),
-                           void (*deInitializer)(void*)) {
+                           void (*deInitializer)(void*), VectorErr* e) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1;
   v->arr = malloc(typeSize * initSize);
@@ -49,7 +56,7 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
   v->_typeSize = typeSize;
   v->length = 0;
 
-  Vector_catPrimitive(v, contents, num);
+  Vector_catPrimitive(v, contents, num, e);
 
   return v;
 }
@@ -63,18 +70,21 @@ void deinitVector(Vector* v) {
   free(v->arr);
 }
 
-extern Vector* initByteVector(Vector* v, size_t initSize, const char* contents, size_t num);
-extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num);
+extern Vector* initByteVector(Vector* v, size_t initSize, const char* contents,
+                              size_t num, VectorErr*);
+extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
+                                VectorErr*);
 
 /**
  * We want the pointer to the [element] but remember that it isn't the pointer
  * that is added to the vector. The element value itself will be copied over.
  * Returned is the address to it's location in the Vector 
  * (same as VectorPtrAt())
+ * @error  V_E_NOMEMS
  */
-void* Vector_add(Vector* v, const void* element) {
-  _Vector_resize(v, 1);
-  if (v->e == V_E_NOMEMS) {
+void* Vector_add(Vector* v, const void* element, VectorErr* e) {
+  _Vector_resize(v, 1, e);
+  if (*e == V_E_NOMEMS) {
     return NULL;
   }
 
@@ -87,20 +97,24 @@ void* Vector_add(Vector* v, const void* element) {
 /**
  * Copy one Vector onto the end of another. Vector [other] gets appended to
  * Vector [v] in this case.
+ * @error  V_E_INCOMPATIBLE_TYPES
  */
-Vector* Vector_cat(Vector* v, const Vector* other) {
+Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e) {
   if (v->_typeSize != other->_typeSize) {
-    v->e = V_E_INCOMPATIBLE_TYPES;
+    *e = V_E_INCOMPATIBLE_TYPES;
     return v;
   }
 
-  return Vector_catPrimitive(v, other->arr, other->length);
+  return Vector_catPrimitive(v, other->arr, other->length, e);
 }
 
-Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num) {
+/**
+ * @error  V_E_NOMEMS
+ */
+Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, VectorErr* e) {
   if (num > 0) {
-    _Vector_resize(v, num);
-    if (v->e == V_E_NOMEMS) {
+    _Vector_resize(v, num, e);
+    if (*e == V_E_NOMEMS) {
       return v;
     }
 
@@ -118,8 +132,9 @@ Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num) {
 
 Vector* Vector_clear(Vector* v) {
   if (v->_deInitializer) {
+    VectorErr eIgnore = V_E_CLEAR;
     for (int i = 0; i < v->length; ++i) {
-      v->_deInitializer((void*) Vector_at(v, i));
+      v->_deInitializer((void*) Vector_at(v, i, &eIgnore));
     }
   }
 
@@ -129,12 +144,16 @@ Vector* Vector_clear(Vector* v) {
   return v;
 }
 
-void* Vector_last(Vector* v) {
+/**
+ * @error  V_E_EMPTY
+ */
+void* Vector_last(Vector* v, VectorErr* e) {
   if (v->length == 0) {
-    v->e = V_E_EMPTY;
+    *e = V_E_EMPTY;
   } else {
     size_t last = v->length - 1;
-    return Vector_at(v, last);
+    VectorErr eIgnore = V_E_CLEAR;
+    return Vector_at(v, last, &eIgnore);
   }
 
   return NULL;
@@ -143,10 +162,11 @@ void* Vector_last(Vector* v) {
 /**
  * Returns a pointer to the specified [index] value.
  * Error if index is out of range.
+ * @error  V_E_RANGE
  */
-void* Vector_at(Vector* v, size_t index) {
+void* Vector_at(Vector* v, size_t index, VectorErr* e) {
   if (index >= v->length || index < 0) {
-    v->e = V_E_RANGE;
+    *e = V_E_RANGE;
     return v->arr;
   } 
 
@@ -154,8 +174,9 @@ void* Vector_at(Vector* v, size_t index) {
 }
 
 void Vector_removeLast(Vector* v) {
-  void* lastEl = Vector_last(v);
-  if (!v->e) {
+  VectorErr e = V_E_CLEAR;
+  void* lastEl = Vector_last(v, &e);
+  if (!e) {
     if (v->_deInitializer) {
       v->_deInitializer(lastEl);
     }
@@ -164,9 +185,13 @@ void Vector_removeLast(Vector* v) {
   }
 }
 
-void Vector_reverse(const Vector* v, Vector* reversed) {
-  for (size_t i = 0; i < v->length; ++i) {
-    Vector_add(reversed, _Vector_calcPtrAt(v, v->length - 1 - i));
+/**
+ * Copies a reversed version of [v] into [reversed]
+ * @error  V_E_NOMEMS
+ */
+void Vector_reverse(const Vector* v, Vector* reversed, VectorErr* e) {
+  for (size_t i = 0; i < v->length && !*e; ++i) {
+    Vector_add(reversed, _Vector_calcPtrAt(v, v->length - 1 - i), e);
   }
 }
 
@@ -196,7 +221,10 @@ void* _Vector_calcDanglingPtr(const Vector* v) {
   return _Vector_calcPtrAt(v, v->length);
 }
 
-void _Vector_resize(Vector *v, size_t numAdded) {
+/**
+ * @error  V_E_NOMEMS
+ */
+void _Vector_resize(Vector *v, size_t numAdded, VectorErr* e) {
   if (v->_arrSize <= v->length + numAdded) {
     v->_arrSize = v->length + numAdded + 1 /* Null element */;
     v->_arrSize *= 2; // For good measure.
@@ -204,7 +232,7 @@ void _Vector_resize(Vector *v, size_t numAdded) {
     void* newMems = realloc(v->arr, v->_arrSize * v->_typeSize);
     if (newMems == NULL) {
       v->_arrSize = v->length;
-      v->e = V_E_NOMEMS;
+      *e = V_E_NOMEMS;
     } else {
       v->arr = newMems;
     }

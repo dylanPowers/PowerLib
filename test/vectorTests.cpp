@@ -5,7 +5,7 @@ extern "C" {
 }
 
 class InitializationOfAVector : public ::testing::Test {
-  public:
+public:
   // You can remove any or all of the following functions if its body
   // is empty.
 
@@ -35,7 +35,8 @@ class InitializationOfAVector : public ::testing::Test {
 };
 
 TEST_F(InitializationOfAVector, SuccessfullyExecutes) {
-  initVector(&v, 1, NULL, NULL);
+  VectorErr eIgnore;
+  initVector(&v, 1, NULL, NULL, &eIgnore);
   SUCCEED();
 }
 
@@ -44,29 +45,33 @@ void* dummyCopyInitializer(void* a, const void* b) {
 }
 
 TEST_F(InitializationOfAVector, HasASetCopyInitializer) {
-  initVector(&v, 1, &dummyCopyInitializer, NULL);
+  VectorErr eIgnore;
+  initVector(&v, 1, &dummyCopyInitializer, NULL, &eIgnore);
   EXPECT_EQ(&dummyCopyInitializer, v._copyInitializer);
 }
 
 TEST_F(InitializationOfAVector, HasCorrectLength) {
-  initVector(&v, sizeof(int), NULL, NULL);
+  VectorErr eIgnore;
+  initVector(&v, sizeof(int), NULL, NULL, &eIgnore);
   EXPECT_EQ(v.length, 0);
 }
 
 class VectorMethods : public InitializationOfAVector {
-  public:
+public:
 
   VectorMethods() {
-    initVector(&v, sizeof(int), NULL, NULL);
+    VectorErr eIgnore;
+    initVector(&v, sizeof(int), NULL, NULL, &eIgnore);
   };
 };
 
 TEST_F(VectorMethods, ReverseCompletes) {
   Vector reversed;
-  initVector(&reversed, sizeof(int), NULL, NULL);
+  VectorErr eIgnore;
+  initVector(&reversed, sizeof(int), NULL, NULL, &eIgnore);
   int nums[3] = { 1, 2, 3 };
-  Vector_catPrimitive(&v, nums, 3);
-  Vector_reverse(&v, &reversed);
+  Vector_catPrimitive(&v, nums, 3, &eIgnore);
+  Vector_reverse(&v, &reversed, &eIgnore);
   EXPECT_EQ(*(int*) reversed.arr, 3);
   EXPECT_EQ(*((int*) reversed.arr + 1), 2);
   EXPECT_EQ(*((int*) reversed.arr + 2), 1);

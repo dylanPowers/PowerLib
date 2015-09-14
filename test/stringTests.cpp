@@ -18,11 +18,13 @@ class InitializationOfAString : public ::testing::Test {
 };
 
 TEST_F(InitializationOfAString, SuccessfullyExecutes) {
-  initString(&str, "");
+  VectorErr eIgnore;
+  initString(&str, "", &eIgnore);
   SUCCEED();
 }
 
 TEST_F(InitializationOfAString, HasCorrentLength) {
-  initString(&str, "...");
+  VectorErr eIgnore;
+  initString(&str, "...", &eIgnore);
   EXPECT_EQ(str.length, 3);
 }
