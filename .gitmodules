@@ -1,4 +1,0 @@
-[submodule "lib/gtest"]
-	path = lib/gtest
-	url = https://chromium.googlesource.com/external/googletest
-	branch = master
