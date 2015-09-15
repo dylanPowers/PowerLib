@@ -31,11 +31,11 @@ public:
   }
 
   // Objects declared here can be used by all tests in the test case for Project1.
-  Vector v;
+  Vector v = { 0 };
 };
 
 TEST_F(InitializationOfAVector, SuccessfullyExecutes) {
-  VectorErr eIgnore;
+  VectorErr eIgnore = V_E_CLEAR;
   initVector(&v, 1, NULL, NULL, &eIgnore);
   SUCCEED();
 }
@@ -45,13 +45,13 @@ void* dummyCopyInitializer(void* a, const void* b) {
 }
 
 TEST_F(InitializationOfAVector, HasASetCopyInitializer) {
-  VectorErr eIgnore;
+  VectorErr eIgnore = V_E_CLEAR;
   initVector(&v, 1, &dummyCopyInitializer, NULL, &eIgnore);
   EXPECT_EQ(&dummyCopyInitializer, v._copyInitializer);
 }
 
 TEST_F(InitializationOfAVector, HasCorrectLength) {
-  VectorErr eIgnore;
+  VectorErr eIgnore = V_E_CLEAR;
   initVector(&v, sizeof(int), NULL, NULL, &eIgnore);
   EXPECT_EQ(v.length, 0);
 }
@@ -60,14 +60,14 @@ class VectorMethods : public InitializationOfAVector {
 public:
 
   VectorMethods() {
-    VectorErr eIgnore;
+    VectorErr eIgnore = V_E_CLEAR;
     initVector(&v, sizeof(int), NULL, NULL, &eIgnore);
   };
 };
 
 TEST_F(VectorMethods, ReverseCompletes) {
-  Vector reversed;
-  VectorErr eIgnore;
+  Vector reversed = { 0 };
+  VectorErr eIgnore = V_E_CLEAR;
   initVector(&reversed, sizeof(int), NULL, NULL, &eIgnore);
   int nums[3] = { 1, 2, 3 };
   Vector_catPrimitive(&v, nums, 3, &eIgnore);

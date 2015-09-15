@@ -8,6 +8,7 @@ void* _Vector_appendCopy(Vector*, const void*);
 void _Vector_appendNull(const Vector*);
 void* _Vector_calcPtrAt(const Vector*, size_t);
 void* _Vector_calcDanglingPtr(const Vector*);
+void _Vector_reinit(Vector* v, size_t typeSize, size_t* initSize, VectorErr* e);
 void _Vector_resize(Vector *, size_t, VectorErr*);
 
 /**
@@ -41,22 +42,33 @@ Vector* initVectorCp(Vector* v, const Vector* copy, VectorErr* e) {
  * number of elements in [contents]. [initializer] is the function used to
  * copy elements into the vector. [deInitializer] is the function that is
  * used to dispose of elements in the vector when they are removed.
- * @errors V_E_NOMEMS
+ * @error V_E_NOMEMS
  */
 Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
                            const void* contents, size_t num,
-                           void* (*initializer)(void*, const void*),
+                           void* (*cpInitializer)(void*, const void*),
                            void (*deInitializer)(void*), VectorErr* e) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1;
-  v->arr = malloc(typeSize * initSize);
-  v->_arrSize = initSize;
-  v->_copyInitializer = initializer;
-  v->_deInitializer = deInitializer;
-  v->_typeSize = typeSize;
-  v->length = 0;
 
-  Vector_catPrimitive(v, contents, num, e);
+  if (v->arr == NULL) {
+    v->arr = malloc(typeSize * initSize);
+    if (v->arr == NULL) {
+      *e = V_E_NOMEMS;
+    }
+  } else {
+    _Vector_reinit(v, typeSize, &initSize, e);
+  }
+
+  if (!*e) {
+    v->_arrSize = initSize;
+    v->_copyInitializer = cpInitializer;
+    v->_deInitializer = deInitializer;
+    v->_typeSize = typeSize;
+    v->length = 0;
+
+    Vector_catPrimitive(v, contents, num, e);
+  }
 
   return v;
 }
@@ -219,6 +231,20 @@ void* _Vector_calcPtrAt(const Vector* v, size_t index) {
 
 void* _Vector_calcDanglingPtr(const Vector* v) {
   return _Vector_calcPtrAt(v, v->length);
+}
+
+/**
+ * @error V_E_NOMEMS
+ */
+void _Vector_reinit(Vector* v, size_t typeSize, size_t* initSize, VectorErr* e) {
+  if (v->_typeSize * v->_arrSize < typeSize * (*initSize)) {
+    void* newMems = realloc(v->arr, typeSize * (*initSize));
+    if (newMems == NULL) {
+      *e = V_E_NOMEMS;
+    }
+  } else {
+    *initSize = v->_typeSize * v->_arrSize / typeSize;
+  }
 }
 
 /**

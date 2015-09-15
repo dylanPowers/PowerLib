@@ -14,7 +14,7 @@ class InitializationOfAString : public ::testing::Test {
     deinitString(&str);
   }
 
-  String str;
+  String str = { 0 };
 };
 
 TEST_F(InitializationOfAString, SuccessfullyExecutes) {
