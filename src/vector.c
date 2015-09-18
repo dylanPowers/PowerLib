@@ -49,7 +49,7 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
                            void* (*cpInitializer)(void*, const void*),
                            void (*deInitializer)(void*), VectorErr* e) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
-  initSize = initSize > num ? initSize: num + 1;
+  initSize = initSize > num ? initSize: num + 1; // +1 remember null end
 
   if (v->arr == NULL) {
     v->arr = malloc(typeSize * initSize);
@@ -67,6 +67,7 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
     v->_typeSize = typeSize;
     v->length = 0;
 
+    _Vector_appendNull(v);
     Vector_catPrimitive(v, contents, num, e);
   }
 
@@ -220,6 +221,9 @@ void* _Vector_appendCopy(Vector* v, const void* element) {
 
 void _Vector_appendNull(const Vector* v) {
   void* nilly = malloc(v->_typeSize);
+  for (int i = 0; i < v->_typeSize; ++i) {
+    *((char*) nilly + i) = (char) 0;
+  }
 
   memcpy(_Vector_calcDanglingPtr(v), nilly, v->_typeSize);
   free(nilly);
