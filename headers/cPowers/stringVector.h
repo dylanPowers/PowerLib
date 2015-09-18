@@ -10,9 +10,9 @@ String* initString(String*, const char*, VectorErr*);
 String* initStringCp(String*, const String*, VectorErr*);
 void deinitString(String*);
 
-char String_charAt(String*, size_t, VectorErr*);
+char String_charAt(const String*, size_t, VectorErr*);
 int String_cmp(const String*, const String*);
 void String_fgets(String*, FILE*, VectorErr*);
-void String_tok(String*, Vector*, char*, VectorErr*);
+void String_tok(const String*, Vector*, char*, VectorErr*);
 
 #endif

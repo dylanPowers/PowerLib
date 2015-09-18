@@ -52,10 +52,10 @@ inline Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
 }
 
 void* Vector_add(Vector*, const void*, VectorErr*);
+void* Vector_at(const Vector*, size_t, VectorErr* e);
 Vector* Vector_cat(Vector*, const Vector*, VectorErr*);
 Vector* Vector_catPrimitive(Vector*, const void*, size_t, VectorErr*);
 Vector* Vector_clear(Vector*);
-void* Vector_at(Vector*, size_t, VectorErr* e);
 void Vector_reverse(const Vector*, Vector*, VectorErr*);
 void* Vector_last(Vector*, VectorErr*);
 void Vector_removeLast(Vector*);

@@ -30,7 +30,7 @@ void deinitString(String* str) {
 /**
  * @error  V_E_RANGE
  */
-char String_charAt(String* str, size_t index, VectorErr* e) {
+char String_charAt(const String* str, size_t index, VectorErr* e) {
   return *(char*) Vector_at(str, index, e);
 }
 
@@ -69,14 +69,18 @@ void String_fgets(String* str, FILE* fd, VectorErr* e) {
 /**
  * @error  V_E_NOMEMS
  */
-void String_tok(String* str, Vector* tokenContainer, char* delimiters, VectorErr* e) {
-  char *token = strtok(str->arr, delimiters);
+void String_tok(const String* str, Vector* tokenContainer, char* delimiters, VectorErr* e) {
+  char* tokenized = (char*) malloc(str->length + 1);
+  memcpy(tokenized, str->arr, str->length + 1);
+  char* token = strtok(tokenized, delimiters);
   while (token != NULL) {
-    String strToken;
+    String strToken = {};
     initString(&strToken, token, e);
     Vector_add(tokenContainer, &strToken, e);
 
     deinitString(&strToken);
     token = strtok(NULL, delimiters);
   }
+
+  free(tokenized);
 }

@@ -108,6 +108,20 @@ void* Vector_add(Vector* v, const void* element, VectorErr* e) {
 }
 
 /**
+ * Returns a pointer to the specified [index] value.
+ * Error if index is out of range.
+ * @error  V_E_RANGE
+ */
+void* Vector_at(const Vector* v, size_t index, VectorErr* e) {
+  if (index >= v->length || index < 0) {
+    *e = V_E_RANGE;
+    return v->arr;
+  }
+
+  return _Vector_calcPtrAt(v, index);
+}
+
+/**
  * Copy one Vector onto the end of another. Vector [other] gets appended to
  * Vector [v] in this case.
  * @error  V_E_INCOMPATIBLE_TYPES
@@ -170,20 +184,6 @@ void* Vector_last(Vector* v, VectorErr* e) {
   }
 
   return NULL;
-}
-
-/**
- * Returns a pointer to the specified [index] value.
- * Error if index is out of range.
- * @error  V_E_RANGE
- */
-void* Vector_at(Vector* v, size_t index, VectorErr* e) {
-  if (index >= v->length || index < 0) {
-    *e = V_E_RANGE;
-    return v->arr;
-  } 
-
-  return _Vector_calcPtrAt(v, index);
 }
 
 void Vector_removeLast(Vector* v) {
