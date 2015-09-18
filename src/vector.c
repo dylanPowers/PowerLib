@@ -15,7 +15,7 @@ void _Vector_resize(Vector *, size_t, VectorErr*);
  * @errors  V_E_NOMEMS
  */
 Vector* initVector(Vector* v, size_t typeSize,
-                   void* (*initializer)(void*, const void*),
+                   void* (*initializer)(void*, const void*, void*),
                    void (*deInitializer)(void*), VectorErr* e) {
   return initVectorAdvanced(v, typeSize, _VECTOR_DEFAULT_INIT_SIZE, NULL, 0,
                             initializer, deInitializer, e);
@@ -46,7 +46,7 @@ Vector* initVectorCp(Vector* v, const Vector* copy, VectorErr* e) {
  */
 Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
                            const void* contents, size_t num,
-                           void* (*cpInitializer)(void*, const void*),
+                           void* (*cpInitializer)(void*, const void*, void*),
                            void (*deInitializer)(void*), VectorErr* e) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1; // +1 remember null end
@@ -211,7 +211,8 @@ void Vector_reverse(const Vector* v, Vector* reversed, VectorErr* e) {
 void* _Vector_appendCopy(Vector* v, const void* element) {
   void* arrayPosition = _Vector_calcDanglingPtr(v);
   if (v->_copyInitializer) {
-    v->_copyInitializer(arrayPosition, element);
+    int error = 0;
+    v->_copyInitializer(arrayPosition, element, &error);
   } else {
     memcpy(arrayPosition, element, v->_typeSize);
   }

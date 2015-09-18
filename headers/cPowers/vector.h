@@ -17,7 +17,7 @@ typedef struct Vector  {
 
   // Privates. No touchy!
   size_t _arrSize; // Allocated array size
-  void* (*_copyInitializer)(void*, const void*);
+  void* (*_copyInitializer)(void*, const void*, void*);
   void (*_deInitializer)(void*);
   size_t _typeSize;
 } Vector;
@@ -33,11 +33,11 @@ typedef enum VectorErr {
   V_E_EMPTY
 } VectorErr;
 
-Vector* initVector(Vector*, size_t, void* (*)(void*, const void*),
+Vector* initVector(Vector*, size_t, void* (*)(void*, const void*, void*),
                    void (*)(void*), VectorErr*);
 Vector* initVectorCp(Vector*, const Vector*, VectorErr*);
 Vector* initVectorAdvanced(Vector*, size_t, size_t, const void*, size_t,
-                           void* (*)(void*, const void*), void (*)(void*),
+                           void* (*)(void*, const void*, void*), void (*)(void*),
                            VectorErr*);
 void deinitVector(Vector*);
 
