@@ -222,9 +222,7 @@ void* _Vector_appendCopy(Vector* v, const void* element) {
 
 void _Vector_appendNull(const Vector* v) {
   void* nilly = malloc(v->_typeSize);
-  for (int i = 0; i < v->_typeSize; ++i) {
-    *((char*) nilly + i) = (char) 0;
-  }
+  memset(nilly, 0, v->_typeSize);
 
   memcpy(_Vector_calcDanglingPtr(v), nilly, v->_typeSize);
   free(nilly);
