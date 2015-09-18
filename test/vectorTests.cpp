@@ -40,7 +40,7 @@ TEST_F(InitializationOfAVector, SuccessfullyExecutes) {
   SUCCEED();
 }
 
-void* dummyCopyInitializer(void* a, const void* b) {
+void* dummyCopyInitializer(void* a, const void* b, void* err) {
   return a;
 }
 
