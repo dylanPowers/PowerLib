@@ -7,7 +7,7 @@ SingleLinkedNode* _LinkedList_lastNode(const LinkedList*);
 void _LinkedList_nullifyLast(LinkedList*, SingleLinkedNode*);
 
 LinkedList* initLinkedList(LinkedList* list, size_t typeSize,
-                           void* (*copyInitializer)(void*, const void*), 
+                           void* (*copyInitializer)(void*, const void*, void*),
                            void (*deInitializer)(void*)) {
   list->firstNode = NULL;
   list->length = 0;
@@ -37,9 +37,11 @@ void deinitLinkedList(LinkedList* list) {
 
 SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode* node, const void* data, 
                                        size_t typeSize,
-                                       void* (*copyInitializer)(void*, const void*)) {
+                                       void* (*copyInitializer)(void*, const void*, void*)) {
   node->data = malloc(typeSize);
-  copyInitializer(node->data, data);
+  memset(node->data, 0, typeSize);
+  int err = 0;
+  copyInitializer(node->data, data, &err);
   node->next = NULL;
   return node;
 }

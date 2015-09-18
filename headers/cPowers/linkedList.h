@@ -9,7 +9,7 @@ typedef struct LinkedList {
   SingleLinkedNode* firstNode;
   int length;
 
-  void* (*_copyInitializer)(void*, const void*);
+  void* (*_copyInitializer)(void*, const void*, void*);
   void (*_deInitializer)(void*);
   size_t _typeSize;
 } LinkedList;
@@ -19,13 +19,13 @@ struct SingleLinkedNode {
   SingleLinkedNode* next;
 };
 
-LinkedList* initLinkedList(LinkedList*, size_t, void* (*)(void*, const void*),
+LinkedList* initLinkedList(LinkedList*, size_t, void* (*)(void*, const void*, void*),
                            void (*)(void*));
 LinkedList* initLinkedListCp(LinkedList*, const LinkedList*);
 void deinitLinkedList(LinkedList*);
 
 SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode*, const void*, size_t,
-                                       void* (*)(void*, const void*));
+                                       void* (*)(void*, const void*, void*));
 void deinitSingleLinkedNode(SingleLinkedNode*, void (*)(void*));
 
 void LinkedList_prepend(LinkedList*, const void* data);
