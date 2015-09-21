@@ -10,7 +10,6 @@ LinkedList* initLinkedList(LinkedList* list, size_t typeSize,
                            void* (*copyInitializer)(void*, const void*, void*),
                            void (*deInitializer)(void*)) {
   list->firstNode = NULL;
-  list->length = 0;
   list->_copyInitializer = copyInitializer;
   list->_deInitializer = deInitializer;
   list->_typeSize = typeSize;

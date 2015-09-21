@@ -7,7 +7,6 @@ typedef struct SingleLinkedNode SingleLinkedNode;
 
 typedef struct LinkedList {
   SingleLinkedNode* firstNode;
-  int length;
 
   void* (*_copyInitializer)(void*, const void*, void*);
   void (*_deInitializer)(void*);
