@@ -196,6 +196,7 @@ void Vector_removeLast(Vector* v) {
     }
 
     v->length--;
+    _Vector_appendNull(v);
   }
 }
 
