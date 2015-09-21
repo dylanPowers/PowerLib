@@ -81,6 +81,7 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
 void deinitVector(Vector* v) {
   Vector_clear(v);
   free(v->arr);
+  v->arr = NULL;
 }
 
 extern Vector* initByteVector(Vector* v, size_t initSize, const char* contents,
