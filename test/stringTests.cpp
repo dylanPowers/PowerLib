@@ -14,17 +14,17 @@ class InitializationOfAString : public ::testing::Test {
     deinitString(&str);
   }
 
-  String str = { 0 };
+  String str = {};
 };
 
 TEST_F(InitializationOfAString, SuccessfullyExecutes) {
-  VectorErr eIgnore;
+  SystemErr eIgnore;
   initString(&str, "", &eIgnore);
   SUCCEED();
 }
 
 TEST_F(InitializationOfAString, HasCorrentLength) {
-  VectorErr eIgnore;
+  SystemErr eIgnore;
   initString(&str, "...", &eIgnore);
   EXPECT_EQ(str.length, 3);
 }

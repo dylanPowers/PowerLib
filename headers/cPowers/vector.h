@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "systemError.h"
+
 /**
  * Vector is a growable array implementation for C. The idea is for it to work
  * similar to a Vector in C++. The implementation is generic so it can
@@ -17,7 +19,7 @@ typedef struct Vector  {
 
   // Privates. No touchy!
   size_t _arrSize; // Allocated array size
-  void* (*_copyInitializer)(void*, const void*, void*);
+  void* (*_copyInitializer)(void*, const void*, SystemErr*);
   void (*_deInitializer)(void*);
   size_t _typeSize;
 } Vector;
@@ -27,36 +29,35 @@ typedef struct Vector  {
 */
 typedef enum VectorErr {
   V_E_CLEAR,
-  V_E_NOMEMS,
   V_E_INCOMPATIBLE_TYPES,
   V_E_RANGE,
   V_E_EMPTY
 } VectorErr;
 
-Vector* initVector(Vector*, size_t, void* (*)(void*, const void*, void*),
-                   void (*)(void*), VectorErr*);
-Vector* initVectorCp(Vector*, const Vector*, VectorErr*);
+Vector* initVector(Vector*, size_t, void* (*)(void*, const void*, SystemErr*),
+                   void (*)(void*), SystemErr*);
+Vector* initVectorCp(Vector*, const Vector*, SystemErr*);
 Vector* initVectorAdvanced(Vector*, size_t, size_t, const void*, size_t,
-                           void* (*)(void*, const void*, void*), void (*)(void*),
-                           VectorErr*);
+                           void* (*)(void*, const void*, SystemErr*), void (*)(void*),
+                           SystemErr*);
 void deinitVector(Vector*);
 
 inline Vector* initByteVector(Vector* v, size_t initSize,
-                              const char* contents, size_t num, VectorErr* e) {
+                              const char* contents, size_t num, SystemErr* e) {
   return initVectorAdvanced(v, sizeof(char), initSize, contents, num, NULL, NULL, e);
 }
 
 inline Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
-                                VectorErr* e) {
+                                SystemErr* e) {
   return initVectorAdvanced(v, sizeof(double), 0, contents, num, NULL, NULL, e);
 }
 
-void* Vector_add(Vector*, const void*, VectorErr*);
+void* Vector_add(Vector*, const void*, SystemErr*);
 void* Vector_at(const Vector*, size_t, VectorErr* e);
-Vector* Vector_cat(Vector*, const Vector*, VectorErr*);
-Vector* Vector_catPrimitive(Vector*, const void*, size_t, VectorErr*);
+Vector* Vector_cat(Vector*, const Vector*, VectorErr*, SystemErr*);
+Vector* Vector_catPrimitive(Vector*, const void*, size_t, SystemErr*);
 Vector* Vector_clear(Vector*);
-void Vector_reverse(const Vector*, Vector*, VectorErr*);
+void Vector_reverse(const Vector*, Vector*, SystemErr*);
 void* Vector_last(Vector*, VectorErr*);
 void Vector_removeLast(Vector*);
 

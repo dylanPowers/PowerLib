@@ -31,27 +31,27 @@ public:
   }
 
   // Objects declared here can be used by all tests in the test case for Project1.
-  Vector v = { 0 };
+  Vector v = {};
 };
 
 TEST_F(InitializationOfAVector, SuccessfullyExecutes) {
-  VectorErr eIgnore = V_E_CLEAR;
+  SystemErr eIgnore = S_E_CLEAR;
   initVector(&v, 1, NULL, NULL, &eIgnore);
   SUCCEED();
 }
 
-void* dummyCopyInitializer(void* a, const void* b, void* err) {
+void* dummyCopyInitializer(void* a, const void* b, SystemErr* err) {
   return a;
 }
 
 TEST_F(InitializationOfAVector, HasASetCopyInitializer) {
-  VectorErr eIgnore = V_E_CLEAR;
+  SystemErr eIgnore = S_E_CLEAR;
   initVector(&v, 1, &dummyCopyInitializer, NULL, &eIgnore);
   EXPECT_EQ(&dummyCopyInitializer, v._copyInitializer);
 }
 
 TEST_F(InitializationOfAVector, HasCorrectLength) {
-  VectorErr eIgnore = V_E_CLEAR;
+  SystemErr eIgnore = S_E_CLEAR;
   initVector(&v, sizeof(int), NULL, NULL, &eIgnore);
   EXPECT_EQ(v.length, 0);
 }
@@ -60,14 +60,14 @@ class VectorMethods : public InitializationOfAVector {
 public:
 
   VectorMethods() {
-    VectorErr eIgnore = V_E_CLEAR;
+    SystemErr eIgnore = S_E_CLEAR;
     initVector(&v, sizeof(int), NULL, NULL, &eIgnore);
   };
 };
 
 TEST_F(VectorMethods, ReverseCompletes) {
-  Vector reversed = { 0 };
-  VectorErr eIgnore = V_E_CLEAR;
+  Vector reversed = {};
+  SystemErr eIgnore = S_E_CLEAR;
   initVector(&reversed, sizeof(int), NULL, NULL, &eIgnore);
   int nums[3] = { 1, 2, 3 };
   Vector_catPrimitive(&v, nums, 3, &eIgnore);

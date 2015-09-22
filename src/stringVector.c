@@ -11,14 +11,14 @@
  * allocated for a new String.
  * @param  contents Primitive C string to initialize to.
  * @return          A pointer to the initialized string.
- * @error           V_E_NOMEMS
+ * @error           S_E_NOMEMS
  */
-String* initString(String* str, const char* contents, VectorErr *e) {
+String* initString(String* str, const char* contents, SystemErr* e) {
   size_t len = contents ? strlen(contents) : 0;
   return initByteVector(str, _STRING_VECTOR_INIT_SIZE, contents, len, e);
 }
 
-String* initStringCp(String* str, const String* copyString, VectorErr *e) {
+String* initStringCp(String* str, const String* copyString, SystemErr* e) {
   return initByteVector(str, copyString->_arrSize, copyString->arr,
                         copyString->length, e);
 }
@@ -43,9 +43,9 @@ int String_cmp(const String* str, const String* comparedToStr) {
  * limited to a predefined string size.
  * The Vector given as [str] better be of char* type!
  * @error  V_E_INCOMPATIBLE_TYPES
- * @error  V_E_NOMEMS
+ * @error  S_E_NOMEMS
  */
-void String_fgets(String* str, FILE* fd, VectorErr* e) {
+void String_fgets(String* str, FILE* fd, VectorErr* e, SystemErr* se) {
   if (str->_typeSize != sizeof(char)) {
     *e = V_E_INCOMPATIBLE_TYPES;
     return;
@@ -61,15 +61,15 @@ void String_fgets(String* str, FILE* fd, VectorErr* e) {
       char tmpStr[1024];
       fgets(tmpStr, 1024, fd);
       size_t len = strlen(tmpStr);
-      Vector_catPrimitive(str, tmpStr, len, e);
+      Vector_catPrimitive(str, tmpStr, len, se);
     }
   }
 }
 
 /**
- * @error  V_E_NOMEMS
+ * @error  S_E_NOMEMS
  */
-void String_tok(const String* str, Vector* tokenContainer, char* delimiters, VectorErr* e) {
+void String_tok(const String* str, Vector* tokenContainer, char* delimiters, SystemErr* e) {
   char* tokenized = (char*) malloc(str->length + 1);
   memcpy(tokenized, str->arr, str->length + 1);
   char* token = strtok(tokenized, delimiters);
