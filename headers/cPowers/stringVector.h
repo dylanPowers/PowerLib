@@ -13,7 +13,7 @@ void deinitString(String*);
 
 char String_charAt(const String*, size_t, VectorErr*);
 int String_cmp(const String*, const String*);
-void String_fgets(String*, FILE*, VectorErr*, SystemErr*);
+void String_fgets(String*, FILE*, SystemErr*);
 void String_tok(const String*, Vector*, char*, SystemErr*);
 
 #endif

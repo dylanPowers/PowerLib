@@ -42,22 +42,17 @@ int String_cmp(const String* str, const String* comparedToStr) {
  * String vector version of fgets. Works exactly like fgets except it's not
  * limited to a predefined string size.
  * The Vector given as [str] better be of char* type!
- * @error  V_E_INCOMPATIBLE_TYPES
  * @error  S_E_NOMEMS
  */
-void String_fgets(String* str, FILE* fd, VectorErr* e, SystemErr* se) {
-  if (str->_typeSize != sizeof(char)) {
-    *e = V_E_INCOMPATIBLE_TYPES;
-    return;
-  }
-
+void String_fgets(String* str, FILE* fd, SystemErr* se) {
   // Let's be sure to start off clean to prevent bugs, especially with strlen().
   Vector_clear(str);
 
   fgets(str->arr, (int) str->_arrSize, fd);
   str->length = strlen(str->arr);
   if (str->length) {
-    while (!*e && *(char*) Vector_last(str, e) != '\n' && !feof(fd)) {
+    VectorErr e = V_E_CLEAR;
+    while (!se && *(char*) Vector_last(str, &e) != '\n' && !feof(fd)) {
       char tmpStr[1024];
       fgets(tmpStr, 1024, fd);
       size_t len = strlen(tmpStr);
