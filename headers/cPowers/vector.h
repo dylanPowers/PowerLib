@@ -47,6 +47,10 @@ inline Vector* initByteVector(Vector* v, size_t initSize,
   return initVectorAdvanced(v, sizeof(char), initSize, contents, num, NULL, NULL, e);
 }
 
+inline Vector* initIntVector(Vector* v, const char* contents, size_t num, SystemErr* se) {
+  return initVectorAdvanced(v, sizeof(int), 0, contents, num, NULL, NULL, se);
+}
+
 inline Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
                                 SystemErr* e) {
   return initVectorAdvanced(v, sizeof(double), 0, contents, num, NULL, NULL, e);

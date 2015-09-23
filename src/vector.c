@@ -86,6 +86,7 @@ void deinitVector(Vector* v) {
 
 extern Vector* initByteVector(Vector* v, size_t initSize, const char* contents,
                               size_t num, SystemErr*);
+extern Vector* initIntVector(Vector* v, const char* contents, size_t num, SystemErr* se);
 extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
                                 SystemErr*);
 
