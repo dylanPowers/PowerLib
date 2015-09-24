@@ -215,6 +215,7 @@ void Vector_reverse(const Vector* v, Vector* reversed, SystemErr* se) {
 void* _Vector_appendCopy(Vector* v, const void* element, SystemErr* se) {
   void* arrayPosition = _Vector_calcDanglingPtr(v);
   if (v->_copyInitializer) {
+    memset(arrayPosition, 0, v->_typeSize);
     v->_copyInitializer(arrayPosition, element, se);
   } else {
     memcpy(arrayPosition, element, v->_typeSize);

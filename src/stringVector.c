@@ -66,6 +66,8 @@ void String_fgets(String* str, FILE* fd, SystemErr* se) {
  */
 void String_tok(const String* str, Vector* tokenContainer,
                 const char* delimiters, SystemErr* e) {
+  Vector_clear(tokenContainer);
+
   char* tokenized = (char*) malloc(str->length + 1);
   memcpy(tokenized, str->arr, str->length + 1);
   char* token = strtok(tokenized, delimiters);
