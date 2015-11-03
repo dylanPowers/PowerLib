@@ -110,6 +110,22 @@ void* Vector_add(Vector* v, const void* element, SystemErr* se) {
 }
 
 /**
+ * Adds an element to the vector that has been initialized to 0. The returned
+ * memory location must be initialized or you will later be very sorry.
+ * @error S_E_NOMEMS
+ */
+void* Vector_addEmpty(Vector* v, SystemErr* se) {
+  _Vector_resize(v, 1, se);
+  if (*se == S_E_NOMEMS) {
+    return NULL;
+  }
+
+  _Vector_appendNull(v);
+  void* mems = _Vector_calcPtrAt(v, v->length - 1); // Last element was previously nulled
+  return mems;
+}
+
+/**
  * Returns a pointer to the specified [index] value.
  * Error if index is out of range.
  * @error  V_E_RANGE

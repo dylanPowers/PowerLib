@@ -57,6 +57,7 @@ inline Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
 }
 
 void* Vector_add(Vector*, const void*, SystemErr*);
+void* Vector_addEmpty(Vector* v, SystemErr* se);
 void* Vector_at(const Vector*, size_t, VectorErr* e);
 Vector* Vector_cat(Vector*, const Vector*, VectorErr*, SystemErr*);
 Vector* Vector_catPrimitive(Vector*, const void*, size_t, SystemErr*);
