@@ -120,6 +120,7 @@ void* Vector_addEmpty(Vector* v, SystemErr* se) {
     return NULL;
   }
 
+  v->length++;
   _Vector_appendNull(v);
   void* mems = _Vector_calcPtrAt(v, v->length - 1); // Last element was previously nulled
   return mems;
