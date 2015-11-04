@@ -132,7 +132,7 @@ void* Vector_addEmpty(Vector* v, SystemErr* se) {
  * @error  V_E_RANGE
  */
 void* Vector_at(const Vector* v, size_t index, VectorErr* e) {
-  if (index >= v->length || index < 0) {
+  if (index >= v->length) {
     *e = V_E_RANGE;
     return v->arr;
   }
