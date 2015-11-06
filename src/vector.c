@@ -9,7 +9,6 @@ void _Vector_appendNull(const Vector*);
 void* _Vector_calcPtrAt(const Vector*, size_t);
 void* _Vector_calcDanglingPtr(const Vector*);
 void _Vector_reinit(Vector*, size_t, size_t*, SystemErr*);
-void _Vector_resize(Vector*, size_t, SystemErr*);
 
 /**
  * @errors  S_E_NOMEMS

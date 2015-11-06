@@ -61,6 +61,20 @@ void String_fgets(String* str, FILE* fd, SystemErr* se) {
   }
 }
 
+void String_nprintf(String* str, size_t n, SystemErr* se, const char* fmt, ...) {
+  if (n > str->_arrSize) {
+    _Vector_resize(str, n - str->_arrSize, se);
+  }
+
+  if (!*se) {
+    va_list vl;
+    va_start(vl, fmt);
+    vsnprintf(str->arr, n, fmt, vl);
+    va_end(vl);
+    str->length = strlen(str->arr);
+  }
+}
+
 /**
  * @error  S_E_NOMEMS
  */

@@ -66,4 +66,6 @@ void Vector_reverse(const Vector*, Vector*, SystemErr*);
 void* Vector_last(Vector*, VectorErr*);
 void Vector_removeLast(Vector*);
 
+void _Vector_resize(Vector*, size_t, SystemErr*);
+
 #endif
