@@ -3,13 +3,13 @@
 #include "stdlib.h"
 #include "string.h"
 
-SingleLinkedNode* _LinkedList_lastNode(const LinkedList*);
-void _LinkedList_nullifyLast(LinkedList*, SingleLinkedNode*);
+void _LinkedList_generateLastNode(LinkedList* list);
 
 LinkedList* initLinkedList(LinkedList* list, size_t typeSize,
                            void* (*copyInitializer)(void*, const void*, SystemErr*),
                            void (*deInitializer)(void*)) {
   list->firstNode = NULL;
+  list->lastNode = NULL;
   list->_copyInitializer = copyInitializer;
   list->_deInitializer = deInitializer;
   list->_typeSize = typeSize;
@@ -38,13 +38,24 @@ SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode* node, const void* data,
                                        size_t typeSize,
                                        void* (*copyInitializer)(void*, const void*, SystemErr*),
                                        SystemErr* se) {
-  node->data = malloc(typeSize);
-  memset(node->data, 0, typeSize);
-  copyInitializer(node->data, data, se);
-  node->next = NULL;
+  initSingleLinkedNode_empty(node, typeSize, se);
+  if (!*se) {
+    copyInitializer(node->data, data, se);
+  }
+
   return node;
 }
 
+SingleLinkedNode* initSingleLinkedNode_empty(SingleLinkedNode* node,
+                                             size_t typeSize,
+                                             SystemErr* se) {
+  node->data = malloc(typeSize);
+  if (node->data != NULL) {
+    memset(node->data, 0, typeSize);
+    node->next = NULL;
+  } else { *se = S_E_NOMEMS; }
+  return node;
+}
 
 void deinitSingleLinkedNode(SingleLinkedNode* node,
                             void (*deInitializer)(void*)) {
@@ -52,17 +63,27 @@ void deinitSingleLinkedNode(SingleLinkedNode* node,
 }
 
 void LinkedList_append(LinkedList* list, const void* data, SystemErr* se) {
-  SingleLinkedNode** appendLocation;
-  if (list->firstNode != NULL) {
-    appendLocation = &_LinkedList_lastNode(list)->next;
-  } else {
-    appendLocation = &list->firstNode;
-  }
-
-  SingleLinkedNode* node = (SingleLinkedNode*) malloc(sizeof(SingleLinkedNode));
-  *appendLocation = initSingleLinkedNode(node, data, list->_typeSize,
-                                         list->_copyInitializer, se);
+  _LinkedList_generateLastNode(list);
+  initSingleLinkedNode(list->lastNode, data, list->_typeSize,
+                       list->_copyInitializer, se);
 }
+
+void* LinkedList_appendEmpty(LinkedList* list, SystemErr* se) {
+  _LinkedList_generateLastNode(list);
+  initSingleLinkedNode_empty(list->lastNode, list->_typeSize, se);
+  return list->lastNode->data;
+}
+
+void _LinkedList_generateLastNode(LinkedList* list) {
+  list->lastNode = (SingleLinkedNode*) malloc(sizeof(SingleLinkedNode));
+
+  if (list->firstNode != NULL) {
+    list->lastNode->next = list->lastNode;
+  } else {
+    list->firstNode = list->lastNode;
+  }
+}
+
 
 void LinkedList_clear(LinkedList* list) {
   SingleLinkedNode* nextNode = list->firstNode;
@@ -74,6 +95,7 @@ void LinkedList_clear(LinkedList* list) {
   }
 
   list->firstNode = NULL;
+  list->lastNode = NULL;
 }
 
 void* LinkedList_first(const LinkedList* list) {
@@ -82,7 +104,7 @@ void* LinkedList_first(const LinkedList* list) {
 
 
 void* LinkedList_last(const LinkedList* list) {
-  return _LinkedList_lastNode(list)->data;
+  return list->lastNode->data;
 }
 
 void LinkedList_prepend(LinkedList* list, const void* data, SystemErr* se) {
@@ -95,6 +117,7 @@ void LinkedList_prepend(LinkedList* list, const void* data, SystemErr* se) {
   }
 }
 
+
 void LinkedList_removeFirst(LinkedList* list) {
   SingleLinkedNode* oldFirst = list->firstNode;
   list->firstNode = oldFirst->next;
@@ -103,29 +126,19 @@ void LinkedList_removeFirst(LinkedList* list) {
 }
 
 void LinkedList_removeLast(LinkedList* list) {
-  SingleLinkedNode* lastNode = _LinkedList_lastNode(list);
-  _LinkedList_nullifyLast(list, lastNode);
-  deinitSingleLinkedNode(lastNode, list->_deInitializer);
-  free(lastNode);
-}
-
-SingleLinkedNode* _LinkedList_lastNode(const LinkedList* list) {
-  SingleLinkedNode* nextNode = list->firstNode;
-  while (nextNode->next != NULL) {
-    nextNode = nextNode->next;
-  }
-
-  return nextNode; 
-}
-
-void _LinkedList_nullifyLast(LinkedList* list, SingleLinkedNode* last) {
-  if (list->firstNode != last) {
+  SingleLinkedNode* lastNode = list->lastNode;
+  if (list->firstNode != lastNode) {
     SingleLinkedNode* nextToLast = list->firstNode;
-    while (nextToLast->next != last) {
+    while (nextToLast->next != lastNode) {
       nextToLast = nextToLast->next;
     }
     nextToLast->next = NULL;
+    list->lastNode = nextToLast;
   } else {
     list->firstNode = NULL;
+    list->lastNode = NULL;
   }
+
+  deinitSingleLinkedNode(lastNode, list->_deInitializer);
+  free(lastNode);
 }

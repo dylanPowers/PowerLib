@@ -9,6 +9,7 @@ typedef struct SingleLinkedNode SingleLinkedNode;
 
 typedef struct LinkedList {
   SingleLinkedNode* firstNode;
+  SingleLinkedNode* lastNode;
 
   void* (*_copyInitializer)(void*, const void*, SystemErr*);
   void (*_deInitializer)(void*);
@@ -28,10 +29,14 @@ void deinitLinkedList(LinkedList*);
 SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode*, const void*, size_t,
                                        void* (*)(void*, const void*, SystemErr*),
                                        SystemErr*);
+SingleLinkedNode* initSingleLinkedNode_empty(SingleLinkedNode* node,
+                                             size_t typeSize,
+                                             SystemErr* se);
 void deinitSingleLinkedNode(SingleLinkedNode*, void (*)(void*));
 
-void LinkedList_prepend(LinkedList*, const void* data, SystemErr*);
 void LinkedList_append(LinkedList*, const void* data, SystemErr*);
+void* LinkedList_appendEmpty(LinkedList* list, SystemErr* se);
+void LinkedList_prepend(LinkedList*, const void* data, SystemErr*);
 
 void* LinkedList_first(const LinkedList*);
 void* LinkedList_last(const LinkedList*);
