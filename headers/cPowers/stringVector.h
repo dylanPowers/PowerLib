@@ -11,6 +11,7 @@ String* initString(String*, const char*, SystemErr*);
 String* initStringCp(String*, const String*, SystemErr*);
 void deinitString(String*);
 
+void String_catnprintf(String* str, size_t n, SystemErr* se, const char* fmt, ...);
 char String_charAt(const String*, size_t, VectorErr*);
 int String_cmp(const String*, const String*);
 void String_fgets(String*, FILE*, SystemErr*);
