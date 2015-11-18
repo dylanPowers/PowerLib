@@ -49,10 +49,10 @@ SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode* node, const void* data,
 SingleLinkedNode* initSingleLinkedNode_empty(SingleLinkedNode* node,
                                              size_t typeSize,
                                              SystemErr* se) {
+  node->next = NULL;
   node->data = malloc(typeSize);
   if (node->data != NULL) {
     memset(node->data, 0, typeSize);
-    node->next = NULL;
   } else { *se = S_E_NOMEMS; }
   return node;
 }
