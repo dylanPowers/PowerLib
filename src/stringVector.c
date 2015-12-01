@@ -1,6 +1,7 @@
-#include "stringVector.h"
-
+#include "stdarg.h"
 #include "string.h"
+
+#include "stringVector.h"
 
 #define _STRING_VECTOR_INIT_SIZE 64
 
