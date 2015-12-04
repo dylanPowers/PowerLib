@@ -18,7 +18,8 @@ if (test_cPowers)
   add_subdirectory(lib/gtest)
   include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
-  add_executable(cPowers-tests test/vectorTests.cpp test/stringTests.cpp)
+  file(GLOB test_src "test/*.cpp")
+  add_executable(cPowers-tests ${test_src})
   target_link_libraries(cPowers-tests cPowers gtest gtest_main)
 
   enable_testing()

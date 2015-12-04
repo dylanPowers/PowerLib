@@ -40,7 +40,11 @@ SingleLinkedNode* initSingleLinkedNode(SingleLinkedNode* node, const void* data,
                                        SystemErr* se) {
   initSingleLinkedNode_empty(node, typeSize, se);
   if (!*se) {
-    copyInitializer(node->data, data, se);
+    if (copyInitializer) {
+      copyInitializer(node->data, data, se);
+    } else {
+      memcpy(node->data, data, typeSize);
+    }
   }
 
   return node;
@@ -57,9 +61,13 @@ SingleLinkedNode* initSingleLinkedNode_empty(SingleLinkedNode* node,
   return node;
 }
 
-void deinitSingleLinkedNode(SingleLinkedNode* node,
+void deinitSingleLinkedNode(SingleLinkedNode* node, size_t typeSize,
                             void (*deInitializer)(void*)) {
-  deInitializer(node->data);
+  if (deInitializer) {
+    deInitializer(node->data);
+  } else {
+    memset(node->data, 0, typeSize);
+  }
 }
 
 void LinkedList_append(LinkedList* list, const void* data, SystemErr* se) {
@@ -89,7 +97,7 @@ void LinkedList_clear(LinkedList* list) {
   SingleLinkedNode* nextNode = list->firstNode;
   while (nextNode != NULL) {
     SingleLinkedNode* tmp = nextNode->next;
-    deinitSingleLinkedNode(nextNode, list->_deInitializer);
+    deinitSingleLinkedNode(nextNode, list->_typeSize, list->_deInitializer);
     free(nextNode);
     nextNode = tmp;
   }
@@ -121,7 +129,7 @@ void LinkedList_prepend(LinkedList* list, const void* data, SystemErr* se) {
 void LinkedList_removeFirst(LinkedList* list) {
   SingleLinkedNode* oldFirst = list->firstNode;
   list->firstNode = oldFirst->next;
-  deinitSingleLinkedNode(oldFirst, list->_deInitializer);
+  deinitSingleLinkedNode(oldFirst, list->_typeSize, list->_deInitializer);
   free(oldFirst);
 }
 
@@ -139,6 +147,26 @@ void LinkedList_removeLast(LinkedList* list) {
     list->lastNode = NULL;
   }
 
-  deinitSingleLinkedNode(lastNode, list->_deInitializer);
+  deinitSingleLinkedNode(lastNode, list->_typeSize, list->_deInitializer);
   free(lastNode);
+}
+
+/**
+ * Finds an item in the linked list with the given comparison function.
+ * @errors LL_E_NOT_FOUND
+ */
+void* LinkedList_find(LinkedList* list, void* dataToFind,
+                     bool (*cmp)(void* dataToFind, void* itemData), LLErr* le) {
+  SingleLinkedNode *node = list->firstNode;
+  while (node != NULL) {
+    if (cmp(dataToFind, node->data)) {
+      return node;
+    }
+
+    node = node->next;
+  }
+
+  *le = LL_E_NOT_FOUND;
+
+  return NULL;
 }
