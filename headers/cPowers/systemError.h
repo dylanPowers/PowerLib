@@ -12,6 +12,7 @@ typedef enum SystemErr {
   S_E_NOMEMS
 } SystemErr;
 
+void conditionallyRaiseErr(SystemErr se);
 void raiseError(SystemErr se);
 void raiseErrMsg(char* fmt, ...);
 

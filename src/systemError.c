@@ -1,6 +1,15 @@
 #include <stdarg.h>
 #include "systemError.h"
 
+/**
+ * Only raises an error if there is actually an error.
+ */
+void conditionallyRaiseError(SystemErr se) {
+  if (se) {
+    raiseError(se);
+  }
+}
+
 void raiseError(SystemErr se) {
   errno = se;
   if (se == S_E_NOMEMS) {
