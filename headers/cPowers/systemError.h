@@ -5,6 +5,8 @@
 #include "errno.h"
 #include "signal.h"
 
+#define E_MSG_MAX_LEN 1024
+
 typedef enum SystemErr {
   S_E_CLEAR,
   S_E_NOMEMS
