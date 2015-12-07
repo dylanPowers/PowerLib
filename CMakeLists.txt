@@ -8,7 +8,7 @@ include_directories(headers/cPowers)
 file(GLOB src "src/*.c")
 file(GLOB headers "headers/cPowers/*.h")
 
-add_library(cPowers STATIC ${src} ${headers})
+add_library(cPowers STATIC ${src})
 
 option(test_cPowers "Build all tests." OFF)
 
