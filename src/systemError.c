@@ -13,7 +13,7 @@ void conditionallyRaiseErr(SystemErr se) {
 void raiseError(SystemErr se) {
   errno = se;
   if (se == S_E_NOMEMS) {
-    fprintf(stderr, "Fatal Error: No more memory available");
+    fprintf(stderr, "Fatal Error: No more memory available\n");
   }
 
   raise(SIGABRT);
