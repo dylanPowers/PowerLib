@@ -17,7 +17,7 @@ public:
 TEST_F(InitializationOfASingleLinkedNode, HandlesNullCopyInitializer) {
   int item = 1;
   initSingleLinkedNode(&node, &item, sizeof(int), NULL, &se);
-  // Did it crash?
+  SUCCEED();
 }
 
 class LinkedListMethods : public ::testing::Test {
@@ -28,7 +28,6 @@ public:
   }
 
   virtual ~LinkedListMethods() {
-    EXPECT_EQ(se, S_E_CLEAR);
     deinitLinkedList(&list);
   }
 
@@ -46,5 +45,54 @@ TEST_F(LinkedListMethods, DoesntFind2) {
   int item2 = 2;
   LLErr llErr = LL_E_CLEAR;
   LinkedList_find(&list, &item2, (bool (*)(void*, void*)) &intTest, &llErr);
-  EXPECT_EQ(llErr, LL_E_NOT_FOUND);
+  EXPECT_EQ(LL_E_NOT_FOUND, llErr);
+}
+
+TEST_F(LinkedListMethods, HasLength1WhenItemAdded) {
+  int item = 1;
+  LinkedList_append(&list, &item, &se);
+  EXPECT_EQ(1, list.length);
+}
+
+TEST_F(LinkedListMethods, HasLength1WhenItemPrepended) {
+  int item = 1;
+  LinkedList_prepend(&list, &item, &se);
+  EXPECT_EQ(1, list.length);
+}
+
+TEST_F(LinkedListMethods, LengthDecrementsWhenFirstRemoved) {
+  int item = 1;
+  LinkedList_append(&list, &item, &se);
+  LinkedList_removeFirst(&list);
+  EXPECT_EQ(0, list.length);
+}
+
+TEST_F(LinkedListMethods, LengthDecrementsWhenLastRemoved) {
+  int item = 1;
+  LinkedList_append(&list, &item, &se);
+  LinkedList_removeLast(&list);
+  EXPECT_EQ(0, list.length);
+}
+
+TEST_F(LinkedListMethods, FirstNodeNextPointsToLast) {
+  int item = 1;
+  LinkedList_append(&list, &item, &se);
+  item = 2;
+  LinkedList_append(&list, &item, &se);
+  EXPECT_EQ(list.firstNode->next, list.lastNode);
+}
+
+TEST_F(LinkedListMethods, NodesNullWhenFirstRemovedOnLength1List) {
+  int item = 1;
+  LinkedList_append(&list, &item, &se);
+  LinkedList_removeFirst(&list);
+  EXPECT_EQ(NULL, list.firstNode);
+  EXPECT_EQ(NULL, list.lastNode);
+}
+
+TEST_F(LinkedListMethods, ClearSetsLengthTo0) {
+  int item = 1;
+  LinkedList_append(&list, &item, &se);
+  LinkedList_clear(&list);
+  EXPECT_EQ(0, list.length);
 }

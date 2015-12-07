@@ -11,6 +11,7 @@ typedef struct SingleLinkedNode SingleLinkedNode;
 typedef struct LinkedList {
   SingleLinkedNode* firstNode;
   SingleLinkedNode* lastNode;
+  size_t length;
 
   void* (*_copyInitializer)(void*, const void*, SystemErr*);
   void (*_deInitializer)(void*);

@@ -83,13 +83,16 @@ void* LinkedList_appendEmpty(LinkedList* list, SystemErr* se) {
 }
 
 void _LinkedList_generateLastNode(LinkedList* list) {
-  list->lastNode = (SingleLinkedNode*) malloc(sizeof(SingleLinkedNode));
+  SingleLinkedNode* lastNode = (SingleLinkedNode*) malloc(sizeof(SingleLinkedNode));
+  list->length++;
 
-  if (list->firstNode != NULL) {
-    list->lastNode->next = list->lastNode;
+  if (list->firstNode == NULL) {
+    list->firstNode = lastNode;
   } else {
-    list->firstNode = list->lastNode;
+    list->lastNode->next = lastNode;
   }
+
+  list->lastNode = lastNode;
 }
 
 
@@ -102,6 +105,7 @@ void LinkedList_clear(LinkedList* list) {
     nextNode = tmp;
   }
 
+  list->length = 0;
   list->firstNode = NULL;
   list->lastNode = NULL;
 }
@@ -123,14 +127,21 @@ void LinkedList_prepend(LinkedList* list, const void* data, SystemErr* se) {
   if (oldFirst != NULL) {
     list->firstNode->next = oldFirst;
   }
+  list->length++;
 }
 
 
 void LinkedList_removeFirst(LinkedList* list) {
   SingleLinkedNode* oldFirst = list->firstNode;
-  list->firstNode = oldFirst->next;
+  if (list->firstNode->next) {
+    list->firstNode = oldFirst->next;
+  } else {
+    list->firstNode = NULL;
+    list->lastNode = NULL;
+  }
   deinitSingleLinkedNode(oldFirst, list->_typeSize, list->_deInitializer);
   free(oldFirst);
+  list->length--;
 }
 
 void LinkedList_removeLast(LinkedList* list) {
@@ -149,6 +160,7 @@ void LinkedList_removeLast(LinkedList* list) {
 
   deinitSingleLinkedNode(lastNode, list->_typeSize, list->_deInitializer);
   free(lastNode);
+  list->length--;
 }
 
 /**
