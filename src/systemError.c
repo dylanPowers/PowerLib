@@ -4,7 +4,7 @@
 /**
  * Only raises an error if there is actually an error.
  */
-void conditionallyRaiseError(SystemErr se) {
+void conditionallyRaiseErr(SystemErr se) {
   if (se) {
     raiseError(se);
   }
