@@ -172,7 +172,7 @@ void* LinkedList_find(LinkedList* list, void* dataToFind,
   SingleLinkedNode *node = list->firstNode;
   while (node != NULL) {
     if (cmp(dataToFind, node->data)) {
-      return node;
+      return node->data;
     }
 
     node = node->next;

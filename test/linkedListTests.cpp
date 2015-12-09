@@ -48,6 +48,14 @@ TEST_F(LinkedListMethods, DoesntFind2) {
   EXPECT_EQ(LL_E_NOT_FOUND, llErr);
 }
 
+TEST_F(LinkedListMethods, FindReturnsPointToValue) {
+  int item = 1;
+  LinkedList_append(&list, &item, &se);
+  LLErr llErr = LL_E_CLEAR;
+  int* itemPtr = (int*) LinkedList_find(&list, &item, (bool (*)(void*, void*)) &intTest, &llErr);
+  EXPECT_EQ(1, *itemPtr);
+}
+
 TEST_F(LinkedListMethods, HasLength1WhenItemAdded) {
   int item = 1;
   LinkedList_append(&list, &item, &se);
