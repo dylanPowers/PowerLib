@@ -1,6 +1,6 @@
 #include "stdarg.h"
 #include "string.h"
-
+#include "math.h"
 #include "stringVector.h"
 
 #define _STRING_VECTOR_INIT_SIZE 64
@@ -86,6 +86,23 @@ void String_nprintf(String* str, size_t n, SystemErr* se, const char* fmt, ...) 
     va_end(vl);
     str->length = strlen(str->arr);
   }
+}
+
+int String_toi(const String* str, int base) {
+  int num = 0;
+  for (int i = 0; i < str->length; ++i) {
+    VectorErr ve = V_E_CLEAR;
+    char* c = Vector_at(str, str->length - 1 - i, &ve);
+    if (*c < '0' + base && *c > '0') {
+      num += (*c - '0') * pow(base, i);
+    } else if (*c < base - 10 + 'A' && *c > 'A') {
+      num += (*c - 'A' + 10) * pow(base, i);
+    } else {
+      return 0;
+    }
+  }
+
+  return num;
 }
 
 /**

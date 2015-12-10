@@ -16,6 +16,7 @@ char String_charAt(const String*, size_t, VectorErr*);
 int String_cmp(const String*, const String*);
 void String_fgets(String*, FILE*, SystemErr*);
 void String_nprintf(String* str, size_t n, SystemErr* se, const char* fmt, ...);
+int String_toi(const String* str, int base);
 void String_tok(const String* str, Vector* tokenContainer,
                 const char* delimiters, SystemErr* se);
 
