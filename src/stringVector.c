@@ -93,9 +93,9 @@ int String_toi(const String* str, int base) {
   for (int i = 0; i < str->length; ++i) {
     VectorErr ve = V_E_CLEAR;
     char* c = Vector_at(str, str->length - 1 - i, &ve);
-    if (*c < '0' + base && *c > '0') {
+    if (*c < '0' + base && *c >= '0') {
       num += (*c - '0') * pow(base, i);
-    } else if (*c < base - 10 + 'A' && *c > 'A') {
+    } else if (*c < base - 10 + 'A' && *c >= 'A') {
       num += (*c - 'A' + 10) * pow(base, i);
     } else {
       return 0;
