@@ -8,7 +8,7 @@ typedef unsigned short   ushort;
 typedef unsigned int     uint;
 typedef unsigned long    ulong;
 
-#ifdef __BCC__1 // 16bit
+#if __BCC__ // 16bit
 typedef unsigned long    u32;
 
 typedef enum {
