@@ -1,8 +1,10 @@
-#include <stddef.h>
-#include <stdbool.h>
-
 #ifndef LINKED_LIST_H
 #define LINKED_LIST_H
+
+#ifndef __BCC__
+
+#include <stddef.h>
+#include <stdbool.h>
 
 #include "systemError.h"
 
@@ -56,4 +58,5 @@ void LinkedList_removeLast(LinkedList*);
 void* LinkedList_find(LinkedList* list, void* dataToFind,
                       bool (*cmp)(void* dataToFind, void* itemData), LLErr* le);
 
+#endif
 #endif

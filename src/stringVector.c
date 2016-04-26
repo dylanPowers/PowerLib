@@ -46,6 +46,7 @@ int String_cmp(const String* str, const String* comparedToStr) {
  * @error  S_E_NOMEMS
  */
 void String_fgets(String* str, FILE* fd, SystemErr* se) {
+  uint len;
   // Let's be sure to start off clean to prevent bugs, especially with strlen().
   Vector_clear(str);
 
@@ -56,13 +57,13 @@ void String_fgets(String* str, FILE* fd, SystemErr* se) {
     while (!se && *(char*) Vector_last(str, &e) != '\n' && !feof(fd)) {
       char tmpStr[1024];
       fgets(tmpStr, 1024, fd);
-      size_t len = strlen(tmpStr);
+      len = strlen(tmpStr);
       Vector_catPrimitive(str, tmpStr, len, se);
     }
   }
 }
 
-void String_catnprintf(String* str, size_t n, SystemErr* se, const char* fmt, ...) {
+void String_catnprintf(String* str, uint n, SystemErr* se, const char* fmt, ...) {
   _Vector_resize(str, n, se);
 
   if (!*se) {
@@ -90,7 +91,8 @@ void String_nprintf(String* str, size_t n, SystemErr* se, const char* fmt, ...) 
 
 int String_toi(const String* str, int base) {
   int num = 0;
-  for (int i = 0; i < str->length; ++i) {
+  int i;
+  for (i = 0; i < str->length; ++i) {
     VectorErr ve = V_E_CLEAR;
     char* c = Vector_at(str, str->length - 1 - i, &ve);
     if (*c < '0' + base && *c >= '0') {
@@ -110,19 +112,27 @@ int String_toi(const String* str, int base) {
  */
 void String_tok(const String* str, Vector* tokenContainer,
                 const char* delimiters, SystemErr* e) {
+#if __BCC__
+  char tokenized[1000];
+#else 
+  char* tokenized = (char*) malloc(str->length + 1);
+#endif
+  char* token;
+  String strToken;
+
   Vector_clear(tokenContainer);
 
-  char* tokenized = (char*) malloc(str->length + 1);
   memcpy(tokenized, str->arr, str->length + 1);
-  char* token = strtok(tokenized, delimiters);
+  token = strtok(tokenized, delimiters);
   while (token != NULL) {
-    String strToken = {};
+    strToken;
     initString(&strToken, token, e);
     Vector_add(tokenContainer, &strToken, e);
 
     deinitString(&strToken);
     token = strtok(NULL, delimiters);
   }
-
+#ifndef __BCC__
   free(tokenized);
+#endif
 }

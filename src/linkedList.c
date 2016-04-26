@@ -1,5 +1,7 @@
 #include "linkedList.h"
 
+#ifndef __BCC__
+
 #include "stdlib.h"
 #include "string.h"
 
@@ -182,3 +184,5 @@ void* LinkedList_find(LinkedList* list, void* dataToFind,
 
   return NULL;
 }
+
+#endif

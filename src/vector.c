@@ -2,7 +2,6 @@
 
 #include "string.h" // memcpy() has to do with strings apparently
 
-#define _VECTOR_DEFAULT_INIT_SIZE 16
 
 void* _Vector_appendCopy(Vector*, const void*, SystemErr*);
 void _Vector_appendNull(const Vector*);
@@ -46,6 +45,9 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
                            const void* contents, size_t num,
                            void* (*cpInitializer)(void*, const void*, SystemErr*),
                            void (*deInitializer)(void*), SystemErr* se) {
+#if __BCC__
+  initSize = _VECTOR_DEFAULT_INIT_SIZE;
+#else
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1; // +1 remember null end
 
@@ -57,6 +59,7 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
   } else {
     _Vector_reinit(v, typeSize, &initSize, se);
   }
+#endif
 
   if (!*se) {
     v->_arrSize = initSize;
@@ -78,16 +81,26 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
  */
 void deinitVector(Vector* v) {
   Vector_clear(v);
+#ifndef __BCC__
   free(v->arr);
   v->arr = NULL;
+#endif
 }
 
-extern Vector* initByteVector(Vector* v, size_t initSize, const char* contents,
-                              size_t num, SystemErr*);
-extern Vector* initIntVector(Vector* v, const char* contents, size_t num, SystemErr* se);
-extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
-                                SystemErr*);
 
+Vector* initByteVector(Vector* v, size_t initSize,
+                              const char* contents, size_t num, SystemErr* e) {
+  return initVectorAdvanced(v, sizeof(char), initSize, contents, num, NULL, NULL, e);
+}
+
+Vector* initIntVector(Vector* v, const char* contents, size_t num, SystemErr* se) {
+  return initVectorAdvanced(v, sizeof(int), 0, contents, num, NULL, NULL, se);
+}
+
+Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
+                                SystemErr* e) {
+  return initVectorAdvanced(v, sizeof(double), 0, contents, num, NULL, NULL, e);
+}
 /**
  * We want the pointer to the [element] but remember that it isn't the pointer
  * that is added to the vector. The element value itself will be copied over.
@@ -96,12 +109,14 @@ extern Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
  * @error  S_E_NOMEMS
  */
 void* Vector_add(Vector* v, const void* element, SystemErr* se) {
+  void* arrayPosition;
+
   _Vector_resize(v, 1, se);
   if (*se == S_E_NOMEMS) {
     return NULL;
   }
 
-  void* arrayPosition = _Vector_appendCopy(v, element, se);
+  arrayPosition = _Vector_appendCopy(v, element, se);
   _Vector_appendNull(v);
 
   return arrayPosition;
@@ -113,6 +128,7 @@ void* Vector_add(Vector* v, const void* element, SystemErr* se) {
  * @error S_E_NOMEMS
  */
 void* Vector_addEmpty(Vector* v, SystemErr* se) {
+  void* mems;
   _Vector_resize(v, 1, se);
   if (*se == S_E_NOMEMS) {
     return NULL;
@@ -120,7 +136,7 @@ void* Vector_addEmpty(Vector* v, SystemErr* se) {
 
   v->length++;
   _Vector_appendNull(v);
-  void* mems = _Vector_calcPtrAt(v, v->length - 1); // Last element was previously nulled
+  mems = _Vector_calcPtrAt(v, v->length - 1); // Last element was previously nulled
   return mems;
 }
 
@@ -157,14 +173,16 @@ Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e, SystemErr* se) 
  * @error  S_E_NOMEMS
  */
 Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, SystemErr* se) {
+  int i;
+
   if (num > 0) {
     _Vector_resize(v, num, se);
     if (*se == S_E_NOMEMS) {
       return v;
     }
 
-    for (int i = 0; i < num; ++i) {
-      _Vector_appendCopy(v, arr + i * v->_typeSize, se);
+    for (i = 0; i < num; ++i) {
+      _Vector_appendCopy(v, ((char*) arr) + i * v->_typeSize, se);
     }
 
     // For compatibility with primitive array functions, always append a NULL
@@ -176,9 +194,10 @@ Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, SystemErr* s
 }
 
 Vector* Vector_clear(Vector* v) {
+  int i;
   if (v->_deInitializer) {
     VectorErr eIgnore = V_E_CLEAR;
-    for (int i = 0; i < v->length; ++i) {
+    for (i = 0; i < v->length; ++i) {
       v->_deInitializer((void*) Vector_at(v, i, &eIgnore));
     }
   }
@@ -222,7 +241,8 @@ void Vector_removeLast(Vector* v) {
  * @error  S_E_NOMEMS
  */
 void Vector_reverse(const Vector* v, Vector* reversed, SystemErr* se) {
-  for (size_t i = 0; i < v->length && !*se; ++i) {
+  int i;
+  for (i = 0; i < v->length && !*se; ++i) {
     Vector_add(reversed, _Vector_calcPtrAt(v, v->length - 1 - i), se);
   }
 }
@@ -240,11 +260,7 @@ void* _Vector_appendCopy(Vector* v, const void* element, SystemErr* se) {
 }
 
 void _Vector_appendNull(const Vector* v) {
-  void* nilly = malloc(v->_typeSize);
-  memset(nilly, 0, v->_typeSize);
-
-  memcpy(_Vector_calcDanglingPtr(v), nilly, v->_typeSize);
-  free(nilly);
+  memset(_Vector_calcDanglingPtr(v), 0, v->_typeSize);
 }
 
 void* _Vector_calcPtrAt(const Vector* v, size_t index) {
@@ -273,6 +289,7 @@ void _Vector_reinit(Vector* v, size_t typeSize, size_t* initSize, SystemErr* se)
  * @error  S_E_NOMEMS
  */
 void _Vector_resize(Vector *v, size_t numAdded, SystemErr* se) {
+#ifndef __BCC__
   if (v->_arrSize <= v->length + numAdded) {
     v->_arrSize = v->length + numAdded + 1 /* Null element */;
     v->_arrSize *= 2; // For good measure.
@@ -285,4 +302,5 @@ void _Vector_resize(Vector *v, size_t numAdded, SystemErr* se) {
       v->arr = newMems;
     }
   }
+#endif
 }

@@ -1,10 +1,19 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <stdbool.h>
-#include <stdlib.h>
+#include "types.h"
+
+#ifndef __BCC__
+  #include <stdlib.h>
+#endif
 
 #include "systemError.h"
+
+#if __BCC__
+  #define _VECTOR_DEFAULT_INIT_SIZE 1000
+#else
+  #define _VECTOR_DEFAULT_INIT_SIZE 16
+#endif
 
 /**
  * Vector is a growable array implementation for C. The idea is for it to work
@@ -14,7 +23,11 @@
 
 // Look, a mutherfuckin vector. Let's reinvent the rock
 typedef struct Vector  {
-  void* arr; // Array yo
+#if __BCC__
+  char arr[1000]; // Array yo
+#else
+  void* arr;
+#endif  
   size_t length; // Woah! We're told a length?
 
   // Privates. No touchy!
@@ -42,19 +55,13 @@ Vector* initVectorAdvanced(Vector*, size_t, size_t, const void*, size_t,
                            SystemErr*);
 void deinitVector(Vector*);
 
-inline Vector* initByteVector(Vector* v, size_t initSize,
-                              const char* contents, size_t num, SystemErr* e) {
-  return initVectorAdvanced(v, sizeof(char), initSize, contents, num, NULL, NULL, e);
-}
 
-inline Vector* initIntVector(Vector* v, const char* contents, size_t num, SystemErr* se) {
-  return initVectorAdvanced(v, sizeof(int), 0, contents, num, NULL, NULL, se);
-}
+Vector* initByteVector(Vector* v, size_t initSize, const char* contents,
+                              size_t num, SystemErr*);
+Vector* initIntVector(Vector* v, const char* contents, size_t num, SystemErr* se);
+Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
+                                SystemErr*);
 
-inline Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
-                                SystemErr* e) {
-  return initVectorAdvanced(v, sizeof(double), 0, contents, num, NULL, NULL, e);
-}
 
 void* Vector_add(Vector*, const void*, SystemErr*);
 void* Vector_addEmpty(Vector* v, SystemErr* se);

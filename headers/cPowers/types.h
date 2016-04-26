@@ -18,9 +18,10 @@ typedef enum {
 #define NULL 0
 
 #else // 32/64bit
+#include "stdbool.h"
+
 typedef unsigned int     u32;
 
 #endif
-
 
 #endif
