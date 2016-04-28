@@ -1,6 +1,10 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include "stddef.h"
+
+// #include "stdlib.h"
+
 typedef unsigned char    u8;
 typedef unsigned short   u16;
 
@@ -15,7 +19,7 @@ typedef enum {
   false = 0, true = 1
 } bool;
 
-#define NULL 0
+// #define NULL 0
 
 #else // 32/64bit
 #include "stdbool.h"

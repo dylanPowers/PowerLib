@@ -3,17 +3,12 @@
 #include "string.h" // memcpy() has to do with strings apparently
 
 
-void* _Vector_appendCopy(Vector*, const void*, SystemErr*);
-void _Vector_appendNull(const Vector*);
-void* _Vector_calcPtrAt(const Vector*, size_t);
-void _Vector_reinit(Vector*, size_t, size_t*, SystemErr*);
-
 /**
  * @errors  S_E_NOMEMS
  */
 Vector* initVector(Vector* v, size_t typeSize,
-                   void* (*initializer)(void*, const void*, SystemErr*),
-                   void (*deInitializer)(void*), SystemErr* se) {
+                   void* (*initializer)(void*, const void*, Err*),
+                   void (*deInitializer)(void*), Err* se) {
   return initVectorAdvanced(v, typeSize, _VECTOR_DEFAULT_INIT_SIZE, NULL, 0,
                             initializer, deInitializer, se);
 }
@@ -21,7 +16,7 @@ Vector* initVector(Vector* v, size_t typeSize,
 /**
  * @errors  S_E_NOMEMS
  */
-Vector* initVectorCp(Vector* v, const Vector* copy, SystemErr* se) {
+Vector* initVectorCp(Vector* v, const Vector* copy, Err* se) {
   return initVectorAdvanced(v, copy->_typeSize, copy->_arrSize,
                             copy->arr, copy->length, copy->_copyInitializer,
                             copy->_deInitializer, se);
@@ -43,25 +38,18 @@ Vector* initVectorCp(Vector* v, const Vector* copy, SystemErr* se) {
  */
 Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
                            const void* contents, size_t num,
-                           void* (*cpInitializer)(void*, const void*, SystemErr*),
-                           void (*deInitializer)(void*), SystemErr* se) {
-#if __BCC__
-  initSize = _VECTOR_DEFAULT_INIT_SIZE;
-#else
+                           void* (*cpInitializer)(void*, const void*, Err*),
+                           void (*deInitializer)(void*), SystemErrNoMems* se) {
   initSize = initSize < 2 ? _VECTOR_DEFAULT_INIT_SIZE : initSize;
   initSize = initSize > num ? initSize: num + 1; // +1 remember null end
 
+  v->arr = malloc(typeSize * initSize);
   if (v->arr == NULL) {
-    v->arr = malloc(typeSize * initSize);
-    if (v->arr == NULL) {
-      *se = S_E_NOMEMS;
-    }
-  } else {
-    _Vector_reinit(v, typeSize, &initSize, se);
+    se->any = true;
+    sprintf(se->msg, "initVector: No more memory available");
   }
-#endif
 
-  if (!*se) {
+  if (!se->any) {
     v->_arrSize = initSize;
     v->_copyInitializer = cpInitializer;
     v->_deInitializer = deInitializer;
@@ -81,24 +69,22 @@ Vector* initVectorAdvanced(Vector* v, size_t typeSize, size_t initSize,
  */
 void deinitVector(Vector* v) {
   Vector_clear(v);
-#ifndef __BCC__
   free(v->arr);
   v->arr = NULL;
-#endif
 }
 
 
 Vector* initByteVector(Vector* v, size_t initSize,
-                              const char* contents, size_t num, SystemErr* e) {
+                              const char* contents, size_t num, Err* e) {
   return initVectorAdvanced(v, sizeof(char), initSize, contents, num, NULL, NULL, e);
 }
 
-Vector* initIntVector(Vector* v, const char* contents, size_t num, SystemErr* se) {
+Vector* initIntVector(Vector* v, const char* contents, size_t num, Err* se) {
   return initVectorAdvanced(v, sizeof(int), 0, contents, num, NULL, NULL, se);
 }
 
 Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
-                                SystemErr* e) {
+                                Err* e) {
   return initVectorAdvanced(v, sizeof(double), 0, contents, num, NULL, NULL, e);
 }
 /**
@@ -108,11 +94,11 @@ Vector* initDoubleVector(Vector* v, const char* contents, size_t num,
  * (same as VectorPtrAt())
  * @error  S_E_NOMEMS
  */
-void* Vector_add(Vector* v, const void* element, SystemErr* se) {
+void* Vector_add(Vector* v, const void* element, SystemErrNoMems* se) {
   void* arrayPosition;
 
   _Vector_resize(v, 1, se);
-  if (*se == S_E_NOMEMS) {
+  if (se->any) {
     return NULL;
   }
 
@@ -127,12 +113,10 @@ void* Vector_add(Vector* v, const void* element, SystemErr* se) {
  * memory location must be initialized or you will later be very sorry.
  * @error S_E_NOMEMS
  */
-void* Vector_addEmpty(Vector* v, SystemErr* se) {
+void* Vector_addEmpty(Vector* v, Err* se) {
   void* mems;
   _Vector_resize(v, 1, se);
-  if (*se == S_E_NOMEMS) {
-    return NULL;
-  }
+  if (se->any) return NULL;
 
   v->length++;
   _Vector_appendNull(v);
@@ -145,9 +129,10 @@ void* Vector_addEmpty(Vector* v, SystemErr* se) {
  * Error if index is out of range.
  * @error  V_E_RANGE
  */
-void* Vector_at(const Vector* v, size_t index, VectorErr* e) {
+void* Vector_at(const Vector* v, size_t index, VectorErrRange* e) {
   if (index >= v->length) {
-    *e = V_E_RANGE;
+    e->any = true;
+    sprintf(e->msg, "Range error: Index %d out of range %d", index, v->length);
     return v->arr;
   }
 
@@ -160,9 +145,11 @@ void* Vector_at(const Vector* v, size_t index, VectorErr* e) {
  * @error  V_E_INCOMPATIBLE_TYPES
  * @error S_E_NOMEMS
  */
-Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e, SystemErr* se) {
+Vector* Vector_cat(Vector* v, const Vector* other, VectorErrIncompatibleTypes* e, SystemErrNoMems* se) {
   if (v->_typeSize != other->_typeSize) {
-    *e = V_E_INCOMPATIBLE_TYPES;
+    e->any = true;
+    sprintf(e->msg, "Vector types are incompatible. Typesize %d != %d", 
+      v->_typeSize, other->_typeSize);
     return v;
   }
 
@@ -172,12 +159,12 @@ Vector* Vector_cat(Vector* v, const Vector* other, VectorErr* e, SystemErr* se) 
 /**
  * @error  S_E_NOMEMS
  */
-Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, SystemErr* se) {
+Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, SystemErrNoMems* se) {
   int i;
 
   if (num > 0) {
     _Vector_resize(v, num, se);
-    if (*se == S_E_NOMEMS) {
+    if (se->any) {
       return v;
     }
 
@@ -195,10 +182,13 @@ Vector* Vector_catPrimitive(Vector* v, const void* arr, size_t num, SystemErr* s
 
 Vector* Vector_clear(Vector* v) {
   int i;
+  VectorErrRange eIgnore;
+  void* el;
+  eIgnore.any = false;
   if (v->_deInitializer) {
-    VectorErr eIgnore = V_E_CLEAR;
-    for (i = 0; i < v->length; ++i) {
-      v->_deInitializer((void*) Vector_at(v, i, &eIgnore));
+    for (i = 0; i < v->length; ++i) { 
+      el = (void*) Vector_at(v, i, &eIgnore);
+      v->_deInitializer(el);
     }
   }
 
@@ -211,12 +201,14 @@ Vector* Vector_clear(Vector* v) {
 /**
  * @error  V_E_EMPTY
  */
-void* Vector_last(Vector* v, VectorErr* e) {
+void* Vector_last(Vector* v, VectorErrEmpty* e) {
+  VectorErrRange eIgnore;
+  eIgnore.any = false;
   if (v->length == 0) {
-    *e = V_E_EMPTY;
+    e->any = 1;
+    sprintf(e->msg, "Empty vector");
   } else {
     size_t last = v->length - 1;
-    VectorErr eIgnore = V_E_CLEAR;
     return Vector_at(v, last, &eIgnore);
   }
 
@@ -224,9 +216,11 @@ void* Vector_last(Vector* v, VectorErr* e) {
 }
 
 void Vector_removeLast(Vector* v) {
-  VectorErr e = V_E_CLEAR;
-  void* lastEl = Vector_last(v, &e);
-  if (!e) {
+  VectorErrEmpty e;
+  void* lastEl;
+  e.any = false;
+  lastEl = Vector_last(v, &e);
+  if (!e.any) {
     if (v->_deInitializer) {
       v->_deInitializer(lastEl);
     }
@@ -240,14 +234,14 @@ void Vector_removeLast(Vector* v) {
  * Copies a reversed version of [v] into [reversed]
  * @error  S_E_NOMEMS
  */
-void Vector_reverse(const Vector* v, Vector* reversed, SystemErr* se) {
+void Vector_reverse(const Vector* v, Vector* reversed, Err* se) {
   int i;
-  for (i = 0; i < v->length && !*se; ++i) {
+  for (i = 0; i < v->length && !se->any; ++i) {
     Vector_add(reversed, _Vector_calcPtrAt(v, v->length - 1 - i), se);
   }
 }
 
-void* _Vector_appendCopy(Vector* v, const void* element, SystemErr* se) {
+void* _Vector_appendCopy(Vector* v, const void* element, Err* se) {
   void* arrayPosition = _Vector_calcDanglingPtr(v);
   if (v->_copyInitializer) {
     memset(arrayPosition, 0, v->_typeSize);
@@ -274,11 +268,12 @@ void* _Vector_calcDanglingPtr(const Vector* v) {
 /**
  * @error S_E_NOMEMS
  */
-void _Vector_reinit(Vector* v, size_t typeSize, size_t* initSize, SystemErr* se) {
+void _Vector_reinit(Vector* v, size_t typeSize, size_t* initSize, SystemErrNoMems* se) {
   if (v->_typeSize * v->_arrSize < typeSize * (*initSize)) {
     void* newMems = realloc(v->arr, typeSize * (*initSize));
     if (newMems == NULL) {
-      *se = S_E_NOMEMS;
+      se->any = true;
+      sprintf(se->msg, "Vector reinit: No more memory available");
     }
   } else {
     *initSize = v->_typeSize * v->_arrSize / typeSize;
@@ -288,19 +283,19 @@ void _Vector_reinit(Vector* v, size_t typeSize, size_t* initSize, SystemErr* se)
 /**
  * @error  S_E_NOMEMS
  */
-void _Vector_resize(Vector *v, size_t numAdded, SystemErr* se) {
-#ifndef __BCC__
+void _Vector_resize(Vector *v, size_t numAdded, SystemErrNoMems* se) {
+  void* newMems;
   if (v->_arrSize <= v->length + numAdded) {
     v->_arrSize = v->length + numAdded + 1 /* Null element */;
     v->_arrSize *= 2; // For good measure.
 
-    void* newMems = realloc(v->arr, v->_arrSize * v->_typeSize);
+    newMems = realloc(v->arr, v->_arrSize * v->_typeSize);
     if (newMems == NULL) {
       v->_arrSize = v->length;
-      *se = S_E_NOMEMS;
+      se->any = true;
+      sprintf(se->msg, "Vector resize: No more memory available");
     } else {
       v->arr = newMems;
     }
   }
-#endif
 }
