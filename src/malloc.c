@@ -24,6 +24,8 @@ void* malloc(size_t size) {
 
   if (spaceAvailableAfter) {
     new = MemRecord_allocateAfter(recordIter, size);
+  } else {
+    return NULL;
   }
 
   totalBytesAvailable -= new->len + sizeof(MemRecord);

@@ -4,7 +4,7 @@
 #if __BCC__
 #include "types.h"
 
-#define MALLOC_BUF_SIZE 2000
+#define MALLOC_BUF_SIZE 4000
 
 typedef struct MemRecord {
   size_t len;
