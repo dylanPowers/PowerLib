@@ -27,14 +27,14 @@ void* malloc(size_t size) {
   }
 
   totalBytesAvailable -= new->len + sizeof(MemRecord);
-  printf("Allocated %u bytes @ %x. %u bytes available\n", 
-    new->len, new + 1, totalBytesAvailable);
+  printf("Allocated %u+ %uB @ %x. %uB available\n", 
+    new->len, sizeof(MemRecord), new + 1, totalBytesAvailable);
   return new + 1;
 }
 
 void* realloc(void* old, size_t size) {
   void* new;
-  printf("Reallocating\n");
+  printf("Reallocating: ");
   new = malloc(size);
   if (!new) {
     return NULL;
@@ -50,13 +50,13 @@ void free(void* ptr) {
   MemRecord* m = MemRecord_findPreviousRecordFor((MemRecord*) buf, ptr);
   if (!m) {
     e.any = true;
-    sprintf(e.msg, "Invalid ptr to free at %x", ptr);
+    sprintf(e.msg, "Invalid ptr to free @ %x", ptr);
     raiseError(&e);
   }
 
   totalBytesAvailable += m->next->len + sizeof(MemRecord);
-  printf("Freed %u bytes at %x. %u bytesAvailable\n",
-    m->next->len + sizeof(MemRecord), ptr,
+  printf("Freed %u+ %uB @ %x. %uB available\n",
+    m->next->len, sizeof(MemRecord), ptr,
     totalBytesAvailable);
   MemRecord_deallocateAfter(m);
 }
