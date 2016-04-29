@@ -25,6 +25,8 @@ void* malloc(size_t size) {
   if (spaceAvailableAfter) {
     new = MemRecord_allocateAfter(recordIter, size);
   } else {
+    putc('\n');
+    printf("Failed to allocate %u bytes. %uB total available\n", size, totalBytesAvailable);
     return NULL;
   }
 
@@ -76,8 +78,8 @@ void initMemRecordRoot() {
 
 bool MemRecord_isSpaceAvailableAfter(MemRecord* record, size_t requestSize) {
   size_t requestedEnd = (char*) (record + 1) + record->len + requestSize + sizeof(MemRecord);
-  return (record->next == NULL && requestedEnd < buf + MALLOC_BUF_SIZE) ||
-    (record->next != NULL && requestedEnd < record->next);
+  return (record->next == NULL && requestedEnd <= buf + MALLOC_BUF_SIZE) ||
+    (record->next != NULL && requestedEnd <= record->next);
 }
 
 MemRecord* MemRecord_allocateAfter(MemRecord* m, size_t len) {
